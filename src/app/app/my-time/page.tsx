@@ -60,7 +60,8 @@ export default async function MyTimePage({
   })
 
   // Récupérer tous les projets pour le filtre (seulement ceux auxquels l'utilisateur a accès)
-  const projects = await getInternalProjects()
+  const projectsResult = await getInternalProjects()
+  const projects = projectsResult.data
 
   return (
     <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">

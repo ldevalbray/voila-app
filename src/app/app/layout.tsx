@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { TopBar } from '@/components/layout/top-bar'
 import { SidebarWrapper } from '@/components/layout/sidebar-wrapper'
 import { SidebarProvider } from '@/components/ui/sidebar'
-import { getInternalProjects } from '@/lib/projects'
+import { getInternalProjects, type Project } from '@/lib/projects'
 
 export default async function AppLayout({
   children,
@@ -22,9 +22,10 @@ export default async function AppLayout({
     }
 
     // Récupérer les projets pour la sidebar
-    let projects: Awaited<ReturnType<typeof getInternalProjects>>
+    let projects: Project[] = []
     try {
-      projects = await getInternalProjects()
+      const result = await getInternalProjects()
+      projects = result.data
     } catch (error) {
       console.error('Error fetching internal projects:', error)
       projects = []

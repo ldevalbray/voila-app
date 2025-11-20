@@ -366,7 +366,10 @@ export function TaskDrawer({
                 onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    estimate_bucket: value === 'none' ? null : value,
+                    estimate_bucket:
+                      value === 'none'
+                        ? null
+                        : (value as 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'),
                   })
                 }
               >

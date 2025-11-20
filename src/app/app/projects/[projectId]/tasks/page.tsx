@@ -39,13 +39,14 @@ export default async function ProjectTasksPage({
     ? searchParamsResolved.type.split(',')
     : undefined
 
-  const tasks = await getTasksByProjectId(projectId, {
+  const tasksResult = await getTasksByProjectId(projectId, {
     status: statusFilter,
     type: typeFilter,
     epic_id: searchParamsResolved.epic_id || undefined,
     search: searchParamsResolved.search,
     // Ne pas filtrer par sprint ici, le client le fera selon le contexte
   })
+  const tasks = tasksResult.data
 
   // Récupérer les epics pour le filtre
   const epics = await getEpicsByProjectId(projectId)

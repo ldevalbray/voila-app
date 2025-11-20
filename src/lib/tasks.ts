@@ -1,4 +1,11 @@
 import { createSupabaseServerClient } from './supabase-server'
+import {
+  PaginationParams,
+  PaginatedResult,
+  normalizePagination,
+  calculatePaginationMetadata,
+  DEFAULT_PAGE_SIZE,
+} from './pagination'
 
 export interface Task {
   id: string
@@ -43,17 +50,19 @@ export interface TaskSort {
 }
 
 /**
- * Récupère les tâches d'un projet avec filtres et tri
+ * Récupère les tâches d'un projet avec filtres, tri et pagination
  * @param projectId ID du projet
  * @param filters Filtres optionnels
  * @param sort Tri optionnel
- * @returns Liste des tâches
+ * @param pagination Paramètres de pagination optionnels
+ * @returns Liste paginée des tâches
  */
 export async function getTasksByProjectId(
   projectId: string,
   filters?: TaskFilters,
-  sort?: TaskSort
-): Promise<Task[]> {
+  sort?: TaskSort,
+  pagination?: PaginationParams
+): Promise<PaginatedResult<Task>> {
   try {
     const supabase = await createSupabaseServerClient()
     const {
@@ -61,7 +70,10 @@ export async function getTasksByProjectId(
     } = await supabase.auth.getSession()
 
     if (!session?.user) {
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+      }
     }
 
     let query = supabase
@@ -117,15 +129,57 @@ export async function getTasksByProjectId(
       query = query.order('created_at', { ascending: false })
     }
 
-    const { data: tasks, error } = await query
+    // Appliquer la pagination
+    const { page, limit, offset } = normalizePagination(pagination)
+    query = query.range(offset, offset + limit - 1)
+
+    // Compter le total avant pagination pour les métadonnées
+    const countQuery = supabase
+      .from('tasks')
+      .select('*', { count: 'exact', head: true })
+      .eq('project_id', projectId)
+
+    // Appliquer les mêmes filtres pour le count
+    if (filters?.status && filters.status.length > 0) {
+      countQuery.in('status', filters.status)
+    }
+    if (filters?.type && filters.type.length > 0) {
+      countQuery.in('type', filters.type)
+    }
+    if (filters?.epic_id !== undefined) {
+      if (filters.epic_id === null) {
+        countQuery.is('epic_id', null)
+      } else {
+        countQuery.eq('epic_id', filters.epic_id)
+      }
+    }
+    if (filters?.sprint_id !== undefined && filters.sprint_id !== null) {
+      countQuery.eq('sprint_id', filters.sprint_id)
+    }
+    if (filters?.search) {
+      countQuery.or(
+        `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`
+      )
+    }
+
+    const [{ data: tasks, error }, { count }] = await Promise.all([
+      query,
+      countQuery,
+    ])
 
     if (error) {
       console.error('Error fetching tasks:', error)
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+      }
     }
 
     if (!tasks || tasks.length === 0) {
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+      }
     }
 
     // Récupérer les assignees pour chaque tâche
@@ -158,14 +212,22 @@ export async function getTasksByProjectId(
       })
     }
 
-    return tasks.map((task) => ({
+    const data = tasks.map((task) => ({
       ...task,
       assignees: assigneesMap.get(task.id) || [],
       assignees_count: assigneesMap.get(task.id)?.length || 0,
     }))
+
+    return {
+      data,
+      pagination: calculatePaginationMetadata(count || 0, page, limit),
+    }
   } catch (error) {
     console.error('Unexpected error in getTasksByProjectId:', error)
-    return []
+    return {
+      data: [],
+      pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+    }
   }
 }
 

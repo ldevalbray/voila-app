@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { TopBar } from '@/components/layout/top-bar'
 import { SidebarWrapper } from '@/components/layout/sidebar-wrapper'
 import { SidebarProvider } from '@/components/ui/sidebar'
-import { getClientProjects } from '@/lib/projects'
+import { getClientProjects, type Project } from '@/lib/projects'
 
 export default async function PortalLayout({
   children,
@@ -22,9 +22,10 @@ export default async function PortalLayout({
     }
 
     // Récupérer les projets pour la sidebar
-    let projects
+    let projects: Project[] = []
     try {
-      projects = await getClientProjects()
+      const result = await getClientProjects()
+      projects = result.data
     } catch (error) {
       console.error('Error fetching client projects:', error)
       projects = []

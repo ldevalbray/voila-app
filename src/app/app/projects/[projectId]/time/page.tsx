@@ -55,7 +55,8 @@ export default async function ProjectTimePage({
     memberships?.map((m: any) => m.user).filter(Boolean) || []
 
   // Récupérer les tâches du projet pour le formulaire
-  const tasks = await getTasksByProjectId(projectId)
+  const tasksResult = await getTasksByProjectId(projectId)
+  const tasks = tasksResult.data
 
   // Récupérer les entrées de temps
   // Note: Le filtre sprint sera géré côté client via le contexte sprint

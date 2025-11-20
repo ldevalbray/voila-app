@@ -18,7 +18,8 @@ import { TasksPageClient } from './tasks-page-client'
  */
 export default async function TasksPage() {
   const t = await getTranslations('tasks')
-  const projects = await getInternalProjects()
+  const projectsResult = await getInternalProjects()
+  const projects = projectsResult.data
   
   // Récupérer tous les épics de tous les projets
   const allEpics = []

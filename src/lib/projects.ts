@@ -1,4 +1,11 @@
 import { createSupabaseServerClient } from './supabase-server'
+import {
+  PaginationParams,
+  PaginatedResult,
+  normalizePagination,
+  calculatePaginationMetadata,
+  DEFAULT_PAGE_SIZE,
+} from './pagination'
 
 export interface Project {
   id: string
@@ -23,8 +30,11 @@ export interface Project {
  * Récupère les projets où l'utilisateur a un rôle interne
  * (project_admin, project_participant, ou project_client)
  * En mode Internal, on peut voir tous les projets auxquels on a accès
+ * @param pagination Paramètres de pagination optionnels
  */
-export async function getInternalProjects(): Promise<Project[]> {
+export async function getInternalProjects(
+  pagination?: PaginationParams
+): Promise<PaginatedResult<Project>> {
   try {
     const supabase = await createSupabaseServerClient()
     const {
@@ -32,7 +42,10 @@ export async function getInternalProjects(): Promise<Project[]> {
     } = await supabase.auth.getSession()
 
     if (!session?.user) {
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+      }
     }
 
     const { data: memberships, error: membershipsError } = await supabase
@@ -43,14 +56,29 @@ export async function getInternalProjects(): Promise<Project[]> {
 
     if (membershipsError) {
       console.error('Error fetching project memberships:', membershipsError)
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+      }
     }
 
     if (!memberships || memberships.length === 0) {
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+      }
     }
 
     const projectIds = memberships.map((m) => m.project_id)
+
+    // Appliquer la pagination
+    const { page, limit, offset } = normalizePagination(pagination)
+
+    // Compter le total
+    const { count } = await supabase
+      .from('projects')
+      .select('*', { count: 'exact', head: true })
+      .in('id', projectIds)
 
     const { data: projects, error: projectsError } = await supabase
       .from('projects')
@@ -62,18 +90,25 @@ export async function getInternalProjects(): Promise<Project[]> {
       )
       .in('id', projectIds)
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
 
     if (projectsError) {
       console.error('Error fetching projects:', projectsError)
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, page, limit),
+      }
     }
 
     if (!projects) {
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, page, limit),
+      }
     }
 
     // Enrichir avec les informations de membership
-    return projects.map((project) => {
+    const data = projects.map((project) => {
       const membership = memberships.find((m) => m.project_id === project.id)
       return {
         ...project,
@@ -85,17 +120,28 @@ export async function getInternalProjects(): Promise<Project[]> {
           : undefined,
       }
     })
+
+    return {
+      data,
+      pagination: calculatePaginationMetadata(count || 0, page, limit),
+    }
   } catch (error) {
     console.error('Unexpected error in getInternalProjects:', error)
-    return []
+    return {
+      data: [],
+      pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+    }
   }
 }
 
 /**
  * Récupère les projets où l'utilisateur a un rôle client
  * (project_client)
+ * @param pagination Paramètres de pagination optionnels
  */
-export async function getClientProjects(): Promise<Project[]> {
+export async function getClientProjects(
+  pagination?: PaginationParams
+): Promise<PaginatedResult<Project>> {
   try {
     const supabase = await createSupabaseServerClient()
     const {
@@ -103,7 +149,10 @@ export async function getClientProjects(): Promise<Project[]> {
     } = await supabase.auth.getSession()
 
     if (!session?.user) {
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+      }
     }
 
     const { data: memberships, error: membershipsError } = await supabase
@@ -114,14 +163,29 @@ export async function getClientProjects(): Promise<Project[]> {
 
     if (membershipsError) {
       console.error('Error fetching client project memberships:', membershipsError)
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+      }
     }
 
     if (!memberships || memberships.length === 0) {
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+      }
     }
 
     const projectIds = memberships.map((m) => m.project_id)
+
+    // Appliquer la pagination
+    const { page, limit, offset } = normalizePagination(pagination)
+
+    // Compter le total
+    const { count } = await supabase
+      .from('projects')
+      .select('*', { count: 'exact', head: true })
+      .in('id', projectIds)
 
     const { data: projects, error: projectsError } = await supabase
       .from('projects')
@@ -133,18 +197,25 @@ export async function getClientProjects(): Promise<Project[]> {
       )
       .in('id', projectIds)
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
 
     if (projectsError) {
       console.error('Error fetching client projects:', projectsError)
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, page, limit),
+      }
     }
 
     if (!projects) {
-      return []
+      return {
+        data: [],
+        pagination: calculatePaginationMetadata(0, page, limit),
+      }
     }
 
     // Enrichir avec les informations de membership
-    return projects.map((project) => {
+    const data = projects.map((project) => {
       const membership = memberships.find((m) => m.project_id === project.id)
       return {
         ...project,
@@ -156,9 +227,17 @@ export async function getClientProjects(): Promise<Project[]> {
           : undefined,
       }
     })
+
+    return {
+      data,
+      pagination: calculatePaginationMetadata(count || 0, page, limit),
+    }
   } catch (error) {
     console.error('Unexpected error in getClientProjects:', error)
-    return []
+    return {
+      data: [],
+      pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
+    }
   }
 }
 

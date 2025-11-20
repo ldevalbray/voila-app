@@ -27,7 +27,8 @@ import { PageToolbar } from '@/components/layout/page-toolbar'
  * Design moderne avec Table shadcn/ui
  */
 export default async function ProjectsPage() {
-  const projects = await getInternalProjects()
+  const projectsResult = await getInternalProjects()
+  const projects = projectsResult.data
   const t = await getTranslations('projects')
 
   return (
