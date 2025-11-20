@@ -1,0 +1,42 @@
+import { requireAuth } from '@/lib/auth'
+import { getUserModes } from '@/lib/modes'
+import { redirect } from 'next/navigation'
+import { TopBar } from '@/components/layout/top-bar'
+import { SidebarWrapper } from '@/components/layout/sidebar-wrapper'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { getClientProjects } from '@/lib/projects'
+
+export default async function PortalLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  // Protéger la route : redirige vers /login si non authentifié
+  const user = await requireAuth()
+  const { hasInternalRole, hasClientRole } = await getUserModes()
+
+  // Si l'utilisateur n'a pas de rôle client mais a un rôle interne, rediriger vers /app
+  if (!hasClientRole && hasInternalRole) {
+    redirect('/app')
+  }
+
+  // Récupérer les projets pour la sidebar
+  const projects = await getClientProjects()
+
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full flex-col">
+        <TopBar
+          user={user}
+          hasInternalRole={hasInternalRole}
+          hasClientRole={hasClientRole}
+        />
+        <div className="flex flex-1 w-full overflow-hidden">
+          <SidebarWrapper mode="client" projects={projects} />
+          <main className="flex-1 w-full overflow-y-auto lg:ml-0">{children}</main>
+        </div>
+      </div>
+    </SidebarProvider>
+  )
+}
+

@@ -1,17 +1,31 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import localFont from 'next/font/local'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import './globals.css'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
+const fustat = localFont({
+  src: [
+    {
+      path: '../fonts/Fustat/static/Fustat-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-fustat',
+  display: 'swap',
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+const commitMono = localFont({
+  src: [
+    {
+      path: '../fonts/CommitMono-400-Regular.otf',
+      weight: '400',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-commit-mono',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -28,9 +42,9 @@ export default async function RootLayout({
   const messages = await getMessages()
 
   return (
-    <html>
+    <html className="w-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${fustat.variable} ${commitMono.variable} antialiased w-full`}
       >
         <NextIntlClientProvider messages={messages}>
           {children}
