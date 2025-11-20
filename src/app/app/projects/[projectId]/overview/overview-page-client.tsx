@@ -5,6 +5,8 @@ import { useSprintContext } from '@/components/layout/sprint-context'
 import { SprintPicker } from '@/components/layout/sprint-picker'
 import { getTaskStatsAction } from '@/lib/actions/task-stats'
 import { CheckSquare, Layers, Link as LinkIcon } from 'lucide-react'
+import { showToast } from '@/lib/toast'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import {
   Card,
   CardContent,
@@ -54,7 +56,8 @@ export function OverviewPageClient({
         const stats = await getTaskStatsAction(projectId, selectedSprintId)
         setTaskStats(stats)
       } catch (error) {
-        console.error('Error loading task stats:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Erreur lors du chargement des statistiques'
+        showToast.error(errorMessage)
       } finally {
         setIsLoading(false)
       }
@@ -123,8 +126,8 @@ export function OverviewPageClient({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <p className="text-sm text-muted-foreground">Chargement...</p>
+              <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
+                <LoadingSpinner size="md" text="Chargement..." />
               </div>
             ) : (
               <div className="space-y-4">

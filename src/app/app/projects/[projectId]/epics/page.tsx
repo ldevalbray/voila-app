@@ -6,6 +6,7 @@ import { EpicsList } from '@/components/epics/epics-list'
 import { SprintsList } from '@/components/sprints/sprints-list'
 import { getTranslations } from 'next-intl/server'
 import { EpicsPageClient } from './epics-page-client'
+import { PageToolbar } from '@/components/layout/page-toolbar'
 
 /**
  * Page Epics & Sprints d'un projet (Internal mode)
@@ -27,8 +28,19 @@ export default async function ProjectEpicsPage({
   const epics = await getEpicsByProjectId(projectId)
   const sprints = await getSprintsByProjectId(projectId)
 
+  const tCommon = await getTranslations('common')
+
   return (
     <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
+      <PageToolbar
+        title={t('epicsAndSprints') || t('epics')}
+        breadcrumbs={[
+          { label: tCommon('home'), href: '/app' },
+          { label: t('projects'), href: '/app/projects' },
+          { label: project.name, href: `/app/projects/${projectId}/overview` },
+          { label: t('epics') || t('epicsAndSprints'), isCurrent: true },
+        ]}
+      />
       <EpicsPageClient
         projectId={projectId}
         newEpicLabel={t('newEpic')}

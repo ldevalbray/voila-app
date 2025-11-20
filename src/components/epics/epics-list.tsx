@@ -17,6 +17,9 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useSprintContext } from '@/components/layout/sprint-context'
 import { createSupabaseBrowserClient } from '@/lib/supabase-client'
+import { showToast } from '@/lib/toast'
+import { EmptyState } from '@/components/layout/empty-state'
+import { Layers } from 'lucide-react'
 
 interface EpicsListProps {
   projectId: string
@@ -55,7 +58,7 @@ export function EpicsList({ projectId, epics }: EpicsListProps) {
           .in('epic_id', epicIds)
 
         if (error) {
-          console.error('Error fetching sprint task counts:', error)
+          // Erreur silencieuse pour cette opération non-critique
           setSprintTaskCounts({})
           return
         }
@@ -70,7 +73,7 @@ export function EpicsList({ projectId, epics }: EpicsListProps) {
 
         setSprintTaskCounts(counts)
       } catch (error) {
-        console.error('Unexpected error loading sprint task counts:', error)
+        // Erreur silencieuse pour cette opération non-critique
         setSprintTaskCounts({})
       }
     }
@@ -115,11 +118,16 @@ export function EpicsList({ projectId, epics }: EpicsListProps) {
         </CardHeader>
         <CardContent>
           {epics.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-sm text-muted-foreground">
-                {t('noEpicsFound')}
-              </p>
-            </div>
+            <EmptyState
+              icon={Layers}
+              title={t('noEpics') || t('noEpicsFound')}
+              description={t('noEpicsDescription') || t('createFirstEpic')}
+              action={
+                <Button onClick={() => setEditingEpic(null)}>
+                  {t('createFirstEpic') || t('newEpic')}
+                </Button>
+              }
+            />
           ) : (
             <Table>
               <TableHeader>

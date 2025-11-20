@@ -18,6 +18,10 @@ import { useRouter } from 'next/navigation'
 import { deleteSprint } from '@/lib/actions/sprints-actions'
 import { Button } from '@/components/ui/button'
 import { Trash2 } from 'lucide-react'
+import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog'
+import { showToast } from '@/lib/toast'
+import { EmptyState } from '@/components/layout/empty-state'
+import { Layers } from 'lucide-react'
 
 interface SprintsListProps {
   projectId: string
@@ -30,6 +34,8 @@ export function SprintsList({ projectId, sprints }: SprintsListProps) {
   const router = useRouter()
   const [editingSprint, setEditingSprint] = useState<Sprint | null>(null)
   const [deletingSprintId, setDeletingSprintId] = useState<string | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [sprintToDelete, setSprintToDelete] = useState<Sprint | null>(null)
 
   const getSprintStatusLabel = (status: string) => {
     const statusMap: Record<string, string> = {
@@ -57,24 +63,30 @@ export function SprintsList({ projectId, sprints }: SprintsListProps) {
     }
   }
 
-  const handleDelete = async (sprintId: string) => {
-    if (!confirm(t('confirmDeleteSprint'))) {
-      return
-    }
+  const handleDeleteClick = (sprint: Sprint) => {
+    setSprintToDelete(sprint)
+    setIsDeleteDialogOpen(true)
+  }
 
-    setDeletingSprintId(sprintId)
+  const handleDeleteConfirm = async () => {
+    if (!sprintToDelete) return
+
+    setDeletingSprintId(sprintToDelete.id)
     try {
-      const result = await deleteSprint(sprintId)
+      const result = await deleteSprint(sprintToDelete.id)
       if (result.error) {
-        alert(result.error)
+        showToast.error(result.error)
       } else {
+        showToast.success(t('sprintDeleted'))
         router.refresh()
       }
     } catch (error) {
-      console.error('Error deleting sprint:', error)
-      alert(tCommon('error'))
+      const errorMessage = error instanceof Error ? error.message : tCommon('error')
+      showToast.error(errorMessage)
     } finally {
       setDeletingSprintId(null)
+      setIsDeleteDialogOpen(false)
+      setSprintToDelete(null)
     }
   }
 
@@ -92,11 +104,16 @@ export function SprintsList({ projectId, sprints }: SprintsListProps) {
         </CardHeader>
         <CardContent>
           {sprints.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-sm text-muted-foreground">
-                {t('noSprintsFound')}
-              </p>
-            </div>
+            <EmptyState
+              icon={Layers}
+              title={t('noSprints') || t('noSprintsFound')}
+              description={t('noSprintsDescription') || t('createFirstSprint')}
+              action={
+                <Button onClick={() => setEditingSprint(null)}>
+                  {t('createFirstSprint') || t('newSprint')}
+                </Button>
+              }
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -146,10 +163,11 @@ export function SprintsList({ projectId, sprints }: SprintsListProps) {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleDelete(sprint.id)
+                            handleDeleteClick(sprint)
                           }}
                           disabled={deletingSprintId === sprint.id}
                           className="h-8 w-8 p-0"
+                          aria-label={t('deleteSprint') || tCommon('delete')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -178,6 +196,23 @@ export function SprintsList({ projectId, sprints }: SprintsListProps) {
           }}
         />
       )}
+
+      {/* Dialog de confirmation de suppression */}
+      <DeleteConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title={t('deleteSprint') || tCommon('delete')}
+        description={
+          sprintToDelete
+            ? t('confirmDeleteSprintMessage', { name: sprintToDelete.name }) ||
+              `Êtes-vous sûr de vouloir supprimer le sprint "${sprintToDelete.name}" ?`
+            : t('confirmDeleteSprint') || 'Êtes-vous sûr de vouloir supprimer ce sprint ?'
+        }
+        confirmText={tCommon('delete')}
+        cancelText={tCommon('cancel')}
+        variant="destructive"
+      />
     </div>
   )
 }

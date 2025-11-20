@@ -26,7 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { PageToolbar } from '@/components/layout/page-toolbar'
-import { Plus, Eye, EyeOff, X, Table2, LayoutGrid, ChevronDown, Search } from 'lucide-react'
+import { Plus, Eye, EyeOff, X, Table2, LayoutGrid, ChevronDown, Search, CheckSquare } from 'lucide-react'
 import { TaskForm } from './task-form'
 import { TasksKanbanView } from './tasks-kanban-view'
 import { TaskDrawer } from './task-drawer'
@@ -35,6 +35,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { SprintPicker } from '@/components/layout/sprint-picker'
 import { TaskTimeBadge } from '@/components/time/task-time-badge'
+import { EmptyState } from '@/components/layout/empty-state'
+import { useProjectContext } from '@/components/layout/project-context'
 
 const TASKS_VIEW_KEY = 'voila_tasks_view'
 
@@ -65,6 +67,7 @@ export function TasksList({
   const t = useTranslations('projects')
   const router = useRouter()
   const searchParams = useSearchParams()
+  const project = useProjectContext()
   
   // Helpers pour les traductions dynamiques
   const getTaskStatusLabel = (status: string) => {
@@ -440,6 +443,12 @@ export function TasksList({
     <div className="space-y-3">
       {/* Barre d'outils avec PageToolbar */}
       <PageToolbar
+        breadcrumbs={[
+          { label: t('home'), href: '/app' },
+          { label: t('projects'), href: '/app/projects' },
+          ...(project ? [{ label: project.name, href: `/app/projects/${projectId}/overview` }] : []),
+          { label: t('tasks') },
+        ]}
         search={{
           placeholder: t('searchTasks'),
           value: searchQuery,
@@ -539,14 +548,27 @@ export function TasksList({
           </CardHeader>
           <CardContent className="p-0">
             {tasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-body-sm text-muted-foreground">
-                  {t('noTasksFound')}
-                </p>
-              </div>
+              <EmptyState
+                icon={CheckSquare}
+                title={hasActiveFilters ? t('noTasksFound') : t('noTasks')}
+                description={
+                  hasActiveFilters
+                    ? t('noTasksFoundDescription') || t('noTasksFound')
+                    : t('noTasksDescription') || t('createFirstTaskDescription')
+                }
+                action={
+                  !hasActiveFilters && (
+                    <Button onClick={() => setIsCreateDialogOpen(true)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t('createFirstTask') || t('newTask')}
+                    </Button>
+                  )
+                }
+              />
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
+              <div className="overflow-x-auto scrollbar-thin" role="region" aria-label={t('tasksList')}>
+                <div className="min-w-full inline-block align-middle">
+                  <Table role="table" aria-label={t('tasksTable')}>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[300px]">{t('title')}</TableHead>
@@ -566,14 +588,36 @@ export function TasksList({
                         key={task.id}
                         className="cursor-pointer transition-colors hover:bg-accent/50 group"
                         onClick={() => setEditingTask(task)}
+                        role="row"
+                        tabIndex={0}
+                        aria-label={`${task.title} - ${getTaskStatusLabel(task.status)}`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            setEditingTask(task)
+                          }
+                        }}
                       >
                         <TableCell className="font-medium">
                           <div className="flex items-start gap-2">
-                            <span className="line-clamp-1">{task.title}</span>
-                            <TaskTimeBadge taskId={task.id} />
+                            <div className="flex-1 min-w-0">
+                              <span className="line-clamp-1 block">{task.title}</span>
+                              <div className="flex items-center gap-2 mt-1 sm:hidden">
+                                <Badge 
+                                  variant={getStatusBadgeVariant(task.status)}
+                                  className="text-caption"
+                                >
+                                  {getTaskStatusLabel(task.status)}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {getTaskTypeLabel(task.type)}
+                                </Badge>
+                              </div>
+                            </div>
+                            <TaskTimeBadge taskId={task.id} className="hidden sm:flex" />
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <Badge 
                             variant={getStatusBadgeVariant(task.status)}
                             className="text-caption"
@@ -581,12 +625,12 @@ export function TasksList({
                             {getTaskStatusLabel(task.status)}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           <Badge variant="outline" className="text-xs">
                             {getTaskTypeLabel(task.type)}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           <Badge 
                             variant={getPriorityBadgeVariant(task.priority)}
                             className="text-caption"
@@ -594,7 +638,7 @@ export function TasksList({
                             {getTaskPriorityLabel(task.priority)}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {task.epic ? (
                             <Badge variant="secondary" className="text-xs max-w-[150px] truncate">
                               {task.epic.title}
@@ -603,7 +647,7 @@ export function TasksList({
                             <span className="text-muted-foreground text-caption">—</span>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden xl:table-cell">
                           {task.estimate_bucket ? (
                             <Badge variant="outline" className="text-xs">
                               {task.estimate_bucket}
@@ -612,17 +656,17 @@ export function TasksList({
                             <span className="text-muted-foreground text-caption">—</span>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <TaskTimeBadge taskId={task.id} />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           {task.is_client_visible ? (
-                            <Eye className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                            <Eye className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" aria-label={t('visibleToClient')} />
                           ) : (
-                            <EyeOff className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                            <EyeOff className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" aria-label={t('notVisibleToClient')} />
                           )}
                         </TableCell>
-                        <TableCell className="text-caption text-muted-foreground">
+                        <TableCell className="hidden lg:table-cell text-caption text-muted-foreground">
                           {new Date(task.created_at).toLocaleDateString('fr-FR', {
                             day: '2-digit',
                             month: '2-digit',
@@ -633,6 +677,7 @@ export function TasksList({
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </div>
             )}
           </CardContent>

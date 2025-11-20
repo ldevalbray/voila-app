@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { updateTask } from '@/lib/actions/tasks'
 import { useRouter } from 'next/navigation'
+import { showToast } from '@/lib/toast'
 
 interface TasksKanbanViewProps {
   projectId: string
@@ -155,20 +156,36 @@ export function TasksKanbanView({
     }
 
     // Mettre à jour le statut
-    const result = await updateTask({
-      id: taskId,
-      status: newStatus,
-    })
+    try {
+      const result = await updateTask({
+        id: taskId,
+        status: newStatus,
+      })
 
-    if (!result.error) {
-      router.refresh()
+      if (result.error) {
+        showToast.error(result.error)
+      } else {
+        showToast.success(t('taskUpdated'))
+        router.refresh()
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t('error')
+      showToast.error(errorMessage)
     }
 
     setDraggedTask(null)
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div 
+      className="flex gap-4 overflow-x-auto pb-4"
+      role="application"
+      aria-label={t('kanbanBoard')}
+      aria-describedby="kanban-description"
+    >
+      <span id="kanban-description" className="sr-only">
+        {t('kanbanBoardDescription')}
+      </span>
       {columns.map((column) => {
         const columnTasks = tasksByStatus[column.id]
         const isDragOver = dragOverColumn === column.id
@@ -180,11 +197,14 @@ export function TasksKanbanView({
               'flex min-w-[280px] max-w-[320px] flex-shrink-0 flex-col',
               'rounded-lg border bg-card transition-all duration-200',
               'h-[calc(100vh-280px)] max-h-[800px]',
-              isDragOver && 'ring-2 ring-primary ring-offset-2'
+              'sm:min-w-[240px] sm:max-w-[280px]',
+              isDragOver && 'ring-2 ring-primary ring-offset-2 scale-[1.02]'
             )}
             onDragOver={(e) => handleDragOver(e, column.id)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, column.id)}
+            role="region"
+            aria-label={`${column.label} - ${columnTasks.length} ${t('tasks')}`}
           >
             {/* Header de la colonne */}
             <div className="flex-shrink-0 border-b bg-muted/30 px-4 py-3">
@@ -210,11 +230,21 @@ export function TasksKanbanView({
                     onDragStart={(e) => handleDragStart(e, task.id)}
                     onDragEnd={handleDragEnd}
                     onClick={() => onTaskClick(task)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${task.title} - ${getTaskStatusLabel(task.status)}`}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onTaskClick(task)
+                      }
+                    }}
                     className={cn(
                       'cursor-move transition-all duration-200',
                       'hover:shadow-md hover:scale-[1.01]',
                       'active:scale-[0.99]',
-                      draggedTask === task.id && 'opacity-50'
+                      'focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2',
+                      draggedTask === task.id && 'opacity-50 scale-95'
                     )}
                   >
                     <CardContent className="p-3">

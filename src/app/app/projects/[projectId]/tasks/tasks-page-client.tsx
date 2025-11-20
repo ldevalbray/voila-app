@@ -7,6 +7,8 @@ import { SprintPicker } from '@/components/layout/sprint-picker'
 import { Task } from '@/lib/tasks'
 import { Epic } from '@/lib/epics'
 import { useRouter } from 'next/navigation'
+import { LoadingSpinner, SkeletonTable } from '@/components/ui/skeleton'
+import { showToast } from '@/lib/toast'
 
 interface TasksPageClientProps {
   projectId: string
@@ -57,7 +59,8 @@ export function TasksPageClient({
         })
         setTasks(filteredTasks)
       } catch (error) {
-        console.error('Error loading tasks:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Erreur lors du chargement des tâches'
+        showToast.error(errorMessage)
       } finally {
         setIsLoading(false)
       }
@@ -79,8 +82,8 @@ export function TasksPageClient({
     <div className="space-y-4">
       {/* Tasks List */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-sm text-muted-foreground">Chargement...</p>
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
+          <SkeletonTable rows={5} />
         </div>
       ) : (
         <TasksList

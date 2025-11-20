@@ -26,6 +26,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { useSprintContext } from '@/components/layout/sprint-context'
 import { getSprintsByProjectIdAction } from '@/lib/actions/sprints'
+import { showToast } from '@/lib/toast'
 
 interface TaskFormProps {
   projectId: string
@@ -104,9 +105,11 @@ export function TaskForm({
         })
         if (result.error) {
           setError(result.error)
+          showToast.error(result.error)
           setIsSubmitting(false)
           return
         }
+        showToast.success(task ? t('taskUpdated') : t('taskCreated'))
       } else {
         // Création
         const result = await createTask({
@@ -115,14 +118,18 @@ export function TaskForm({
         })
         if (result.error) {
           setError(result.error)
+          showToast.error(result.error)
           setIsSubmitting(false)
           return
         }
+        showToast.success(task ? t('taskUpdated') : t('taskCreated'))
       }
 
       onSuccess()
     } catch (err) {
-      setError(tCommon('error'))
+      const errorMessage = err instanceof Error ? err.message : tCommon('error')
+      setError(errorMessage)
+      showToast.error(errorMessage)
       setIsSubmitting(false)
     }
   }
