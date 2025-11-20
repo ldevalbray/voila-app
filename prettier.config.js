@@ -1,9 +1,6 @@
 /** @type {import("prettier").Config} */
-const config = {
+module.exports = {
   semi: false,
   singleQuote: true,
-  trailingComma: "es5",
-};
-
-export default config;
-
+  trailingComma: 'es5',
+}

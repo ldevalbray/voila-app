@@ -10,9 +10,9 @@ It serves as the north star for designers, engineers, and product contributors w
 
 ## 2. Dual Experiences
 
-| Experience | Audience | Capabilities |
-|------------|----------|--------------|
-| **Internal App (`app`)** | freelancers, internal teammates | full project cockpit (epics, sprints, tasks, time, billing, notes, documents, members, settings). Access à toutes les données internes + outils d’orchestration. |
+| Experience                   | Audience                             | Capabilities                                                                                                                                                                                      |
+| ---------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Internal App (`app`)**     | freelancers, internal teammates      | full project cockpit (epics, sprints, tasks, time, billing, notes, documents, members, settings). Access à toutes les données internes + outils d’orchestration.                                  |
 | **Client Portal (`portal`)** | client-side users (`project_client`) | vue restreinte : uniquement contenu flaggé `is_client_visible`, indicateurs temps/budget simplifiés, factures du projet. Aucun accès aux tâches internes, commentaires privés ou réglages projet. |
 
 A single user can be internal on some projects and a client on others. Access is always scoped by **project memberships**.
@@ -84,5 +84,3 @@ Exact schema, enums, migrations, and RLS policies will be defined per implementa
 
 This README is a living artifact—update it when product decisions evolve (new roles, data entities, UX pillars, etc.).  
 Concrete implementation tracks (e.g., “Step 1 – Auth & basic schema”) will link back here to ensure changes stay aligned with the global vision.
-
-
