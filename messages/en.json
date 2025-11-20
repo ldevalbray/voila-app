@@ -1,0 +1,81 @@
+{
+  "common": {
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "back": "Back",
+    "next": "Next",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Sign in to your Voila.app account",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot password?",
+      "submitButton": "Sign in",
+      "submitButtonLoading": "Signing in...",
+      "noAccount": "Don't have an account yet?",
+      "createAccount": "Create an account"
+    },
+    "signup": {
+      "title": "Create an account",
+      "subtitle": "Sign up to start using Voila.app",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "••••••••",
+      "passwordMinLength": "At least 6 characters",
+      "passwordMismatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "submitButton": "Create my account",
+      "submitButtonLoading": "Creating...",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email address and we'll send you a link to reset your password.",
+      "emailPlaceholder": "you@example.com",
+      "submitButton": "Send reset link",
+      "submitButtonLoading": "Sending...",
+      "successMessage": "A password reset email has been sent to {email}. Check your inbox.",
+      "backToLogin": "Back to sign in"
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "subtitle": "Enter your new password",
+      "passwordPlaceholder": "••••••••",
+      "confirmPasswordPlaceholder": "••••••••",
+      "submitButton": "Reset password",
+      "submitButtonLoading": "Resetting...",
+      "passwordMismatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "passwordMinLength": "At least 6 characters",
+      "sessionExpired": "Invalid or expired session. Redirecting to reset page..."
+    }
+  },
+  "app": {
+    "title": "Internal application",
+    "subtitle": "You are signed in as {email}",
+    "placeholder": "This page is a placeholder for the internal application. Project, client, and member logic will be added in Step 2."
+  },
+  "portal": {
+    "title": "Client portal",
+    "subtitle": "Welcome to the client portal"
+  },
+  "language": {
+    "switch": "Switch language",
+    "english": "English",
+    "french": "Français"
+  }
+}
+
