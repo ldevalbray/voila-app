@@ -75,7 +75,7 @@ export function NavItem({
               {icon}
             </span>
           )}
-          <span className="flex-1 text-sm leading-none tracking-tight group-data-[collapsible=icon]:hidden">{label}</span>
+          <span className="flex-1 text-body-sm leading-none tracking-tight group-data-[collapsible=icon]:hidden">{label}</span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>

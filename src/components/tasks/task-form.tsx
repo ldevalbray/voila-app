@@ -111,7 +111,7 @@ export function TaskForm({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            <div className="rounded-md bg-destructive/10 p-3 text-body-sm text-destructive">
               {error}
             </div>
           )}
@@ -223,12 +223,17 @@ export function TaskForm({
               <Label htmlFor="estimate_bucket">{t('estimate')}</Label>
               <Select
                 value={formData.estimate_bucket || 'none'}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  const validBuckets = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
                   setFormData({
                     ...formData,
-                    estimate_bucket: value === 'none' ? null : value,
+                    estimate_bucket: value === 'none' 
+                      ? null 
+                      : (validBuckets.includes(value as typeof validBuckets[number]) 
+                          ? (value as typeof validBuckets[number]) 
+                          : null),
                   })
-                }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={t('noEstimate')} />

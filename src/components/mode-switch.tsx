@@ -36,7 +36,7 @@ export function ModeSwitch({ hasInternalRole, hasClientRole }: ModeSwitchProps) 
       ]}
       value={currentValue}
       onValueChange={handleValueChange}
-      size="sm"
+      size="md"
     />
   )
 }

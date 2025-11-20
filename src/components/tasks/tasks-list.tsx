@@ -318,7 +318,7 @@ export function TasksList({
   return (
     <div className="space-y-3">
       {/* Barre d'outils - TOUT sur une seule ligne */}
-      <div className="flex items-center gap-3 flex-nowrap overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="flex items-center gap-3 flex-nowrap overflow-x-auto overflow-y-visible pt-3 pb-2 -mx-1 px-1">
         {/* Barre de recherche expandable */}
         {isSearchExpanded ? (
           <div className="relative flex items-center flex-shrink-0">
@@ -370,6 +370,106 @@ export function TasksList({
         {/* Diviseur */}
         <div className="h-6 w-px bg-border flex-shrink-0" />
 
+        {/* Multi-select Statut */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                'h-9 text-body-sm justify-between min-w-[120px] max-w-[160px] flex-shrink-0',
+                statusFilter.length > 0 && 'bg-accent'
+              )}
+            >
+              <span className="truncate">{getStatusSelectLabel()}</span>
+              <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-2" align="start">
+            <div className="space-y-2">
+              {['todo', 'in_progress', 'blocked', 'waiting_for_client', 'done'].map((status) => (
+                <div
+                  key={status}
+                  className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
+                  onClick={() => handleStatusMultiSelect(status, !statusFilter.includes(status))}
+                >
+                  <Checkbox
+                    checked={statusFilter.includes(status)}
+                    onCheckedChange={(checked) => handleStatusMultiSelect(status, !!checked)}
+                  />
+                  <label className="text-body-sm cursor-pointer flex-1 flex items-center justify-between">
+                    <span>{getTaskStatusLabel(status)}</span>
+                    <span className="ml-2 text-caption text-muted-foreground">
+                      ({stats.by_status[status] || 0})
+                    </span>
+                  </label>
+                </div>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Multi-select Type */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                'h-9 text-body-sm justify-between min-w-[120px] max-w-[160px] flex-shrink-0',
+                typeFilter.length > 0 && 'bg-accent'
+              )}
+            >
+              <span className="truncate">{getTypeSelectLabel()}</span>
+              <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-2" align="start">
+            <div className="space-y-2">
+              {['bug', 'new_feature', 'improvement'].map((type) => (
+                <div
+                  key={type}
+                  className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
+                  onClick={() => handleTypeMultiSelect(type, !typeFilter.includes(type))}
+                >
+                  <Checkbox
+                    checked={typeFilter.includes(type)}
+                    onCheckedChange={(checked) => handleTypeMultiSelect(type, !!checked)}
+                  />
+                  <label className="text-body-sm cursor-pointer flex-1 flex items-center justify-between">
+                    <span>{getTaskTypeLabel(type)}</span>
+                    <span className="ml-2 text-caption text-muted-foreground">
+                      ({typeCounts[type] || 0})
+                    </span>
+                  </label>
+                </div>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Select Epic (simple) */}
+        <Select value={epicFilter} onValueChange={handleEpicFilter}>
+          <SelectTrigger className="h-9 text-body-sm min-w-[160px] max-w-[200px] flex-shrink-0">
+            <SelectValue placeholder={t('filterByEpic')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('allEpics')}</SelectItem>
+            <SelectItem value="none">{t('noEpic')}</SelectItem>
+            {epics.map((epic) => (
+              <SelectItem key={epic.id} value={epic.id}>
+                {epic.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Espace flexible pour pousser le switch et le bouton à droite */}
+        <div className="flex-1" />
+
+        {/* Diviseur */}
+        <div className="h-6 w-px bg-border flex-shrink-0" />
+
         {/* Switcher de vue */}
         <div className="flex-shrink-0">
           <SegmentedControl
@@ -395,110 +495,10 @@ export function TasksList({
                 ),
               },
             ]}
-            size="sm"
+            size="md"
             className="border-border bg-background"
           />
         </div>
-
-        {/* Diviseur */}
-        <div className="h-6 w-px bg-border flex-shrink-0" />
-
-        {/* Multi-select Statut */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                'h-9 text-xs justify-between min-w-[120px] max-w-[160px] flex-shrink-0',
-                statusFilter.length > 0 && 'bg-accent'
-              )}
-            >
-              <span className="truncate">{getStatusSelectLabel()}</span>
-              <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-2" align="start">
-            <div className="space-y-2">
-              {['todo', 'in_progress', 'blocked', 'waiting_for_client', 'done'].map((status) => (
-                <div
-                  key={status}
-                  className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
-                  onClick={() => handleStatusMultiSelect(status, !statusFilter.includes(status))}
-                >
-                  <Checkbox
-                    checked={statusFilter.includes(status)}
-                    onCheckedChange={(checked) => handleStatusMultiSelect(status, !!checked)}
-                  />
-                  <label className="text-sm cursor-pointer flex-1 flex items-center justify-between">
-                    <span>{getTaskStatusLabel(status)}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      ({stats.by_status[status] || 0})
-                    </span>
-                  </label>
-                </div>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        {/* Multi-select Type */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                'h-9 text-xs justify-between min-w-[120px] max-w-[160px] flex-shrink-0',
-                typeFilter.length > 0 && 'bg-accent'
-              )}
-            >
-              <span className="truncate">{getTypeSelectLabel()}</span>
-              <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-2" align="start">
-            <div className="space-y-2">
-              {['bug', 'new_feature', 'improvement'].map((type) => (
-                <div
-                  key={type}
-                  className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
-                  onClick={() => handleTypeMultiSelect(type, !typeFilter.includes(type))}
-                >
-                  <Checkbox
-                    checked={typeFilter.includes(type)}
-                    onCheckedChange={(checked) => handleTypeMultiSelect(type, !!checked)}
-                  />
-                  <label className="text-sm cursor-pointer flex-1 flex items-center justify-between">
-                    <span>{getTaskTypeLabel(type)}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      ({typeCounts[type] || 0})
-                    </span>
-                  </label>
-                </div>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        {/* Select Epic (simple) */}
-        <Select value={epicFilter} onValueChange={handleEpicFilter}>
-          <SelectTrigger className="h-9 text-xs min-w-[160px] max-w-[200px] flex-shrink-0">
-            <SelectValue placeholder={t('filterByEpic')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('allEpics')}</SelectItem>
-            <SelectItem value="none">{t('noEpic')}</SelectItem>
-            {epics.map((epic) => (
-              <SelectItem key={epic.id} value={epic.id}>
-                {epic.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Espace flexible pour pousser le bouton à droite */}
-        <div className="flex-1" />
 
         {/* Bouton Nouvelle tâche */}
         <Button onClick={() => setIsCreateDialogOpen(true)} size="sm" className="flex-shrink-0">
@@ -513,7 +513,7 @@ export function TasksList({
           {searchQuery && (
             <Badge
               variant="secondary"
-              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-xs h-6"
+              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
               onClick={() => {
                 setSearchQuery('')
                 updateFilters({ search: undefined })
@@ -528,7 +528,7 @@ export function TasksList({
             <Badge
               key={status}
               variant="secondary"
-              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-xs h-6"
+              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
               onClick={() => handleStatusFilter(status)}
             >
               <span>{getTaskStatusLabel(status)}</span>
@@ -539,7 +539,7 @@ export function TasksList({
             <Badge
               key={type}
               variant="secondary"
-              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-xs h-6"
+              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
               onClick={() => handleTypeFilter(type)}
             >
               <span>{getTaskTypeLabel(type)}</span>
@@ -549,7 +549,7 @@ export function TasksList({
           {epicFilter !== 'all' && (
             <Badge
               variant="secondary"
-              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-xs h-6"
+              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
               onClick={() => handleEpicFilter('all')}
             >
               <span>{getEpicLabel(epicFilter)}</span>
@@ -560,7 +560,7 @@ export function TasksList({
             variant="ghost"
             size="sm"
             onClick={handleResetFilters}
-            className="h-6 text-xs ml-auto"
+            className="h-6 text-caption ml-auto"
           >
             {t('resetFilters')}
           </Button>
@@ -581,12 +581,12 @@ export function TasksList({
       ) : (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold">{t('tasksList')}</CardTitle>
+            <CardTitle>{t('tasksList')}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {tasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body-sm text-muted-foreground">
                   {t('noTasksFound')}
                 </p>
               </div>
@@ -620,7 +620,7 @@ export function TasksList({
                         <TableCell>
                           <Badge 
                             variant={getStatusBadgeVariant(task.status)}
-                            className="text-xs"
+                            className="text-caption"
                           >
                             {getTaskStatusLabel(task.status)}
                           </Badge>
@@ -633,7 +633,7 @@ export function TasksList({
                         <TableCell>
                           <Badge 
                             variant={getPriorityBadgeVariant(task.priority)}
-                            className="text-xs"
+                            className="text-caption"
                           >
                             {getTaskPriorityLabel(task.priority)}
                           </Badge>
@@ -644,7 +644,7 @@ export function TasksList({
                               {task.epic.title}
                             </Badge>
                           ) : (
-                            <span className="text-muted-foreground text-xs">—</span>
+                            <span className="text-muted-foreground text-caption">—</span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -653,7 +653,7 @@ export function TasksList({
                               {task.estimate_bucket}
                             </Badge>
                           ) : (
-                            <span className="text-muted-foreground text-xs">—</span>
+                            <span className="text-muted-foreground text-caption">—</span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -663,7 +663,7 @@ export function TasksList({
                             <EyeOff className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                           )}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
+                        <TableCell className="text-caption text-muted-foreground">
                           {new Date(task.created_at).toLocaleDateString('fr-FR', {
                             day: '2-digit',
                             month: '2-digit',

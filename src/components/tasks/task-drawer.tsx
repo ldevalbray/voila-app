@@ -217,10 +217,10 @@ export function TaskDrawer({
           <>
             <SheetHeader className="border-b pb-4 animate-slide-up-fade relative z-10 pointer-events-none [&>*]:pointer-events-auto" style={{ animationDelay: '0.05s', animationFillMode: 'both', animationDuration: '0.3s' }}>
               <div className="flex items-center justify-between">
-                <SheetTitle className="text-xl font-semibold">
+                <SheetTitle>
                   {t('taskDetails')}
                 </SheetTitle>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground px-3 py-1 rounded-full bg-accent/50 backdrop-blur-sm border transition-all duration-300">
+                <div className="flex items-center gap-2 text-caption text-muted-foreground px-3 py-1 rounded-full bg-accent/50 backdrop-blur-sm border transition-all duration-300">
                   {isSaving && (
                     <>
                       <Loader2 className="h-3 w-3 animate-spin text-primary" />
@@ -239,7 +239,7 @@ export function TaskDrawer({
             <div className="mt-6 space-y-6">
           {/* Titre */}
           <div className="space-y-2 animate-slide-up-fade" style={{ animationDelay: '0.1s', animationFillMode: 'both', animationDuration: '0.3s' }}>
-            <Label htmlFor="title" className="text-sm font-medium">
+            <Label htmlFor="title" className="font-medium">
               {t('title')} *
             </Label>
             <Input
@@ -248,7 +248,7 @@ export function TaskDrawer({
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="text-base font-medium input-modern transition-all duration-300"
+              className="text-body font-medium input-modern transition-all duration-300"
               placeholder={t('title')}
             />
           </div>
@@ -444,7 +444,7 @@ export function TaskDrawer({
             <div className="flex flex-wrap gap-2">
               <Badge
                 variant={getStatusBadgeVariant(formData.status)}
-                className="text-xs transition-all duration-300 hover:scale-110 hover:shadow-md"
+                className="text-caption transition-all duration-300 hover:scale-110 hover:shadow-md"
               >
                 {getTaskStatusLabel(formData.status)}
               </Badge>
@@ -453,7 +453,7 @@ export function TaskDrawer({
               </Badge>
               <Badge
                 variant={getPriorityBadgeVariant(formData.priority)}
-                className="text-xs transition-all duration-300 hover:scale-110 hover:shadow-md"
+                className="text-caption transition-all duration-300 hover:scale-110 hover:shadow-md"
               >
                 {getTaskPriorityLabel(formData.priority)}
               </Badge>
@@ -471,7 +471,7 @@ export function TaskDrawer({
           </div>
 
           {/* Métadonnées de la tâche */}
-          <div className="pt-4 border-t space-y-2 text-xs text-muted-foreground animate-slide-up-fade" style={{ animationDelay: '0.4s', animationFillMode: 'both', animationDuration: '0.3s' }}>
+          <div className="pt-4 border-t space-y-2 text-caption text-muted-foreground animate-slide-up-fade" style={{ animationDelay: '0.4s', animationFillMode: 'both', animationDuration: '0.3s' }}>
             <div className="flex justify-between">
               <span>{t('createdAt') || 'Créé le'}:</span>
               <span>
@@ -505,9 +505,9 @@ export function TaskDrawer({
           <div className="flex items-center justify-center h-full min-h-[400px]">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{tCommon('loading')}</p>
+              <p className="text-body-sm text-muted-foreground">{tCommon('loading')}</p>
               {!task && open && (
-                <p className="text-xs text-destructive mt-2">
+                <p className="text-caption text-destructive mt-2">
                   Aucune tâche sélectionnée (open={String(open)}, task={task ? 'exists' : 'null'})
                 </p>
               )}

@@ -30,15 +30,22 @@ export function SegmentedControl({
 }: SegmentedControlProps) {
   const activeIndex = options.findIndex((opt) => opt.value === value)
   const sizeClasses = {
-    sm: 'h-8 text-xs px-2',
-    md: 'h-9 text-sm px-3',
-    lg: 'h-10 text-base px-4',
+    sm: 'h-8 text-[0.75rem] px-2',
+    md: 'h-9 text-[0.875rem] px-3 py-0',
+    lg: 'h-10 text-[1rem] px-4',
+  }
+
+  const containerPadding = {
+    sm: 'p-0.5',
+    md: 'p-0',
+    lg: 'p-0.5',
   }
 
   return (
     <div
       className={cn(
-        'inline-flex rounded-md border border-sidebar-border/50 bg-sidebar-accent/30 p-0.5',
+        'inline-flex rounded-md border border-sidebar-border/50 bg-sidebar-accent/30',
+        containerPadding[size],
         'backdrop-blur-sm',
         className
       )}

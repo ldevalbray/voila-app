@@ -189,8 +189,8 @@ export function TasksKanbanView({
             {/* Header de la colonne */}
             <div className="flex-shrink-0 border-b bg-muted/30 px-4 py-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold">{column.label}</span>
-                <Badge variant="secondary" className="ml-2 text-xs">
+                <span className="text-body-sm font-semibold">{column.label}</span>
+                <Badge variant="secondary" className="ml-2 text-caption">
                   {columnTasks.length}
                 </Badge>
               </div>
@@ -199,7 +199,7 @@ export function TasksKanbanView({
             {/* Liste des tâches */}
             <div className="flex-1 space-y-2 overflow-y-auto p-3">
               {columnTasks.length === 0 ? (
-                <div className="flex h-full items-center justify-center py-8 text-center text-xs text-muted-foreground">
+                <div className="flex h-full items-center justify-center py-8 text-center text-caption text-muted-foreground">
                   <span>{t('noTasks')}</span>
                 </div>
               ) : (
@@ -220,7 +220,7 @@ export function TasksKanbanView({
                     <CardContent className="p-3">
                       {/* Header de la tâche */}
                       <div className="mb-2 flex items-start justify-between gap-2">
-                        <h4 className="flex-1 text-sm font-medium leading-tight line-clamp-2">
+                        <h4 className="flex-1 text-body-sm font-medium leading-tight line-clamp-2">
                           {task.title}
                         </h4>
                         <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground opacity-50" />
@@ -233,14 +233,14 @@ export function TasksKanbanView({
                         </Badge>
                         <Badge
                           variant={getPriorityBadgeVariant(task.priority)}
-                          className="text-xs"
+                          className="text-caption"
                         >
                           {getTaskPriorityLabel(task.priority)}
                         </Badge>
                       </div>
 
                       {/* Métadonnées */}
-                      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <div className="mt-2 flex items-center justify-between gap-2 text-caption text-muted-foreground">
                         <div className="flex items-center gap-1.5 min-w-0 flex-1">
                           {task.epic && (
                             <Badge variant="secondary" className="text-xs truncate max-w-full">
@@ -248,7 +248,7 @@ export function TasksKanbanView({
                             </Badge>
                           )}
                           {task.estimate_bucket && (
-                            <span className="text-xs shrink-0">{task.estimate_bucket}</span>
+                            <span className="text-caption shrink-0">{task.estimate_bucket}</span>
                           )}
                         </div>
                         {task.is_client_visible ? (
@@ -260,7 +260,7 @@ export function TasksKanbanView({
 
                       {/* Description tronquée */}
                       {task.description && (
-                        <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+                        <p className="mt-2 line-clamp-2 text-caption text-muted-foreground">
                           {task.description}
                         </p>
                       )}

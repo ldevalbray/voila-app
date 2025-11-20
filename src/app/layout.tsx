@@ -4,18 +4,6 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import './globals.css'
 
-const fustat = localFont({
-  src: [
-    {
-      path: '../fonts/Fustat/static/Fustat-Regular.ttf',
-      weight: '400',
-      style: 'normal',
-    },
-  ],
-  variable: '--font-fustat',
-  display: 'swap',
-})
-
 const commitMono = localFont({
   src: [
     {
@@ -44,7 +32,7 @@ export default async function RootLayout({
   return (
     <html className="w-full">
       <body
-        className={`${fustat.variable} ${commitMono.variable} antialiased w-full`}
+        className={`${commitMono.variable} antialiased w-full font-sans`}
       >
         <NextIntlClientProvider messages={messages}>
           {children}

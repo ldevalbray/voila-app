@@ -112,7 +112,7 @@ export function ProjectSelector({
           </TooltipContent>
         </Tooltip>
         <PopoverContent 
-          className="w-80 p-0" 
+          className="w-80 p-0 overflow-y-visible" 
           align="start"
           side="right"
           sideOffset={12}
@@ -121,10 +121,10 @@ export function ProjectSelector({
           <Command>
             <CommandInput 
               placeholder={t('searchProjects')} 
-              className="h-10 border-0 focus:ring-0"
+              className="h-10 border-0 focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0"
             />
             <CommandList>
-              <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+              <CommandEmpty className="py-6 text-center text-body-sm text-muted-foreground">
                 {t('noProjectFound')}
               </CommandEmpty>
               <CommandGroup>
@@ -148,11 +148,11 @@ export function ProjectSelector({
                       )}
                     />
                     <div className="flex flex-1 flex-col gap-0.5 min-w-0">
-                      <span className="font-medium text-sm text-sidebar-foreground">
+                      <span className="font-medium text-body-sm text-sidebar-foreground">
                         {project.name}
                       </span>
                       {project.client && (
-                        <span className="text-xs text-sidebar-foreground/50 flex items-center gap-1">
+                        <span className="text-caption text-sidebar-foreground/50 flex items-center gap-1">
                           <Building2 className="h-3 w-3 shrink-0" />
                           <span className="truncate">{project.client.name}</span>
                         </span>
@@ -187,18 +187,13 @@ export function ProjectSelector({
           >
             {currentProject ? (
               <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0">
-                <span className="font-medium text-sm leading-tight text-sidebar-foreground truncate w-full">
+                <span className="font-medium text-body-sm leading-tight text-sidebar-foreground truncate w-full">
                   {currentProject.name}
                 </span>
-                {currentProject.client && (
-                  <span className="text-xs text-sidebar-foreground/50 flex items-center gap-1 truncate w-full">
-                    <Building2 className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{currentProject.client.name}</span>
-                  </span>
-                )}
+               
               </div>
             ) : (
-              <span className="text-sidebar-foreground/50 text-sm">{t('selectProjectPlaceholder')}</span>
+              <span className="text-sidebar-foreground/50 text-body-sm">{t('selectProjectPlaceholder')}</span>
             )}
             <ChevronsUpDown className={cn(
               'ml-2 h-4 w-4 shrink-0 transition-transform duration-200',
@@ -208,7 +203,7 @@ export function ProjectSelector({
           </button>
         </PopoverTrigger>
         <PopoverContent 
-          className="min-w-[var(--radix-popover-trigger-width)] w-auto max-w-md p-0" 
+          className="min-w-[var(--radix-popover-trigger-width)] w-auto max-w-md p-0 overflow-y-visible" 
           align="start"
           side="bottom"
           sideOffset={4}
@@ -216,10 +211,10 @@ export function ProjectSelector({
           <Command>
             <CommandInput 
               placeholder={t('searchProjects')} 
-              className="h-10 border-0 focus:ring-0"
+              className="h-10 border-0 focus:ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0"
             />
             <CommandList>
-              <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+              <CommandEmpty className="py-6 text-center text-body-sm text-muted-foreground">
                 {t('noProjectFound')}
               </CommandEmpty>
               <CommandGroup>
@@ -243,11 +238,11 @@ export function ProjectSelector({
                       )}
                     />
                     <div className="flex flex-1 flex-col gap-0.5 min-w-0">
-                      <span className="font-medium text-sm text-sidebar-foreground">
+                      <span className="font-medium text-body-sm text-sidebar-foreground">
                         {project.name}
                       </span>
                       {project.client && (
-                        <span className="text-xs text-sidebar-foreground/50 flex items-center gap-1">
+                        <span className="text-caption text-sidebar-foreground/50 flex items-center gap-1">
                           <Building2 className="h-3 w-3 shrink-0" />
                           <span className="truncate">{project.client.name}</span>
                         </span>
@@ -262,11 +257,11 @@ export function ProjectSelector({
       </Popover>
       
       {currentProject && (
-        <div className="flex items-center gap-2 text-xs text-sidebar-foreground/50 px-1 group-data-[collapsible=icon]:hidden">
+        <div className="flex items-center gap-2 text-caption text-sidebar-foreground/50 px-1 group-data-[collapsible=icon]:hidden">
           <Badge 
             variant="outline" 
             className={cn(
-              'text-xs font-normal h-5 px-1.5',
+              'text-caption font-normal h-5 px-1.5',
               'border-sidebar-border/50 bg-sidebar-accent/30',
               'text-sidebar-foreground/70'
             )}

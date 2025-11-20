@@ -78,26 +78,29 @@ const config: Config = {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
-  		fontFamily: {
-  			sans: [
-  				'var(--font-fustat)',
-  				'system-ui',
-  				'-apple-system',
-  				'sans-serif'
-  			],
-  			mono: [
-  				'var(--font-commit-mono)',
-  				'ui-monospace',
-  				'SFMono-Regular',
-  				'monospace'
-  			],
-  			commit: [
-  				'var(--font-commit-mono)',
-  				'ui-monospace',
-  				'SFMono-Regular',
-  				'monospace'
-  			]
-  		},
+		fontFamily: {
+			sans: [
+				'Funnelsans',
+				'system-ui',
+				'-apple-system',
+				'BlinkMacSystemFont',
+				'Segoe UI',
+				'Roboto',
+				'sans-serif'
+			],
+			mono: [
+				'var(--font-commit-mono)',
+				'ui-monospace',
+				'SFMono-Regular',
+				'monospace'
+			],
+			commit: [
+				'var(--font-commit-mono)',
+				'ui-monospace',
+				'SFMono-Regular',
+				'monospace'
+			]
+		},
   		fontSize: {
   			'display': ['4rem', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
   			'h1': ['2.5rem', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '-0.01em' }],

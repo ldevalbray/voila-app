@@ -81,7 +81,7 @@ export function TopBar({ user, hasInternalRole, hasClientRole }: TopBarProps) {
             <SidebarTrigger className="flex" />
             <Link
               href={basePath}
-              className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-foreground/80"
+              className="flex items-center gap-2 text-body-lg font-semibold tracking-tight text-foreground transition-colors hover:text-foreground/80"
             >
               <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                 Voila.app
@@ -95,7 +95,7 @@ export function TopBar({ user, hasInternalRole, hasClientRole }: TopBarProps) {
               variant="outline"
               size="sm"
               className={cn(
-                'h-9 w-full max-w-md justify-start gap-2 text-sm text-muted-foreground',
+                'h-9 w-full max-w-md justify-start gap-2 text-body-sm text-muted-foreground',
                 'hover:bg-accent hover:text-accent-foreground',
                 'border-border/50'
               )}
@@ -139,12 +139,12 @@ export function TopBar({ user, hasInternalRole, hasClientRole }: TopBarProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="flex flex-col space-y-1 p-3">
-                  <span className="text-sm font-medium leading-none">
+                  <span className="text-body-sm font-medium leading-none">
                     {user.first_name && user.last_name
                       ? `${user.first_name} ${user.last_name}`
                       : t('user')}
                   </span>
-                  <span className="text-xs font-normal text-muted-foreground">
+                  <span className="text-caption font-normal text-muted-foreground">
                     {user.email}
                   </span>
                 </DropdownMenuLabel>

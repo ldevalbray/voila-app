@@ -60,7 +60,7 @@ export function LanguageSwitcher() {
       ]}
       value={locale}
       onValueChange={handleLanguageChange}
-      size="sm"
+      size="md"
     />
   )
 }

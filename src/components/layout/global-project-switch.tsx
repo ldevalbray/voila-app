@@ -167,7 +167,7 @@ export function GlobalProjectSwitch({ basePath, projects }: GlobalProjectSwitchP
               onClick={() => handleValueChange(option.value)}
               className={cn(
                 'relative flex-1 flex items-center justify-center gap-2 rounded-md',
-                'h-9 px-3 text-sm font-medium',
+                'h-9 px-3 text-[0.875rem] font-medium',
                 'transition-all duration-300 ease-out',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1',
                 'group',
