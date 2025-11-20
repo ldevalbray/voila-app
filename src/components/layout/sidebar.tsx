@@ -15,7 +15,9 @@ import {
   SidebarContent,
   SidebarHeader,
   SidebarMenu,
+  SidebarRail,
 } from '@/components/ui/sidebar'
+import { useTranslations } from 'next-intl'
 
 interface SidebarProps {
   mode: 'internal' | 'client'
@@ -24,14 +26,17 @@ interface SidebarProps {
 }
 
 /**
- * Composant Sidebar réutilisable pour Internal et Client modes
- * Utilise la configuration de navigation centralisée et les nouveaux composants
+ * Sidebar moderne avec design 2025 SaaS
+ * - Switch Global/Project en haut
+ * - Navigation contextuelle selon le mode
+ * - Project selector dans le mode Project
  */
 export function AppSidebar({ mode, projects, currentProject: currentProjectProp }: SidebarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const basePath = mode === 'internal' ? '/app' : '/portal'
   const [, setLastProjectId] = useLastProjectId()
+  const t = useTranslations('ui')
   
   // Utiliser le projet depuis le contexte si disponible, sinon depuis les props
   const projectFromContext = useProjectContext()
@@ -54,8 +59,6 @@ export function AppSidebar({ mode, projects, currentProject: currentProjectProp 
   }, [currentProject?.id, setLastProjectId])
 
   // Déterminer si on est en mode Project
-  // Si on est sur /app/projects avec ?mode=project, on est en mode Project
-  // Sinon, vérifier si on est sur une route projet spécifique
   const isProjectMode = (() => {
     if (!pathname) return false
     // Si on est sur /app/projects avec ?mode=project, on est en mode Project
@@ -71,22 +74,23 @@ export function AppSidebar({ mode, projects, currentProject: currentProjectProp 
   const currentProjectId = currentProject?.id || projectIdFromUrl
 
   // Utiliser la configuration de navigation centralisée
-  const navigation = getNavigationConfig(mode, basePath)
+  const tNav = useTranslations('navigation')
+  const navigation = getNavigationConfig(mode, basePath, tNav)
   const globalNav = navigation.global
   const projectNav = currentProjectId ? navigation.getProject(currentProjectId) : []
 
   return (
-    <Sidebar>
-      <SidebarHeader>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="border-b border-sidebar-border/50 px-4 py-4 bg-sidebar/50 backdrop-blur-sm group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-4">
         {/* Switch Global/Project */}
         <GlobalProjectSwitch basePath={basePath} projects={projects} />
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2">
         {/* Section Global */}
         {!isProjectMode && (
-          <SidebarSection title="Global">
-            <SidebarMenu>
+          <SidebarSection>
+            <SidebarMenu className="space-y-0.5 group-data-[collapsible=icon]:space-y-2">
               {globalNav.map((item) => (
                 <NavItem
                   key={item.href}
@@ -103,7 +107,7 @@ export function AppSidebar({ mode, projects, currentProject: currentProjectProp 
         {/* Section Project */}
         {isProjectMode && (
           <>
-            <SidebarSection title="Current project">
+            <SidebarSection className="mb-2">
               <ProjectSelector
                 projects={projects}
                 currentProjectId={currentProjectId}
@@ -113,24 +117,27 @@ export function AppSidebar({ mode, projects, currentProject: currentProjectProp 
             </SidebarSection>
             
             {currentProject ? (
-              <SidebarMenu>
-                {projectNav.map((item) => (
-                  <NavItem
-                    key={item.href}
-                    href={item.href}
-                    label={item.label}
-                    icon={item.icon}
-                  />
-                ))}
-              </SidebarMenu>
+              <SidebarSection>
+                <SidebarMenu className="space-y-0.5 group-data-[collapsible=icon]:space-y-2">
+                  {projectNav.map((item) => (
+                    <NavItem
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      icon={item.icon}
+                    />
+                  ))}
+                </SidebarMenu>
+              </SidebarSection>
             ) : (
-              <div className="rounded-lg border border-sidebar-border bg-sidebar-accent/50 p-4 text-sm text-sidebar-foreground/70">
-                Select a project to begin
+              <div className="mt-2 rounded-lg border border-sidebar-border/50 bg-sidebar-accent/30 p-4 text-sm text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">
+                {t('selectProjectToBegin')}
               </div>
             )}
           </>
         )}
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   )
 }

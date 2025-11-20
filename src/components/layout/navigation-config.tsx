@@ -13,7 +13,7 @@ import {
   Receipt,
   StickyNote,
   Files,
-  Settings,
+  Settings as SettingsIcon,
 } from 'lucide-react'
 
 export interface NavItemConfig {
@@ -37,46 +37,58 @@ export interface NavigationConfig {
 /**
  * Navigation globale (Internal mode)
  */
-export const globalNavInternal: NavItemConfig[] = [
-  { href: '/app', label: 'Home', exact: true, icon: <Home className="h-4 w-4" /> },
-  { href: '/app/tasks', label: 'My tasks', icon: <CheckSquare className="h-4 w-4" /> },
-  { href: '/app/projects', label: 'Projects', icon: <FolderKanban className="h-4 w-4" /> },
-]
+export function getGlobalNavInternal(t: (key: string) => string): NavItemConfig[] {
+  return [
+    { href: '/app', label: t('home'), exact: true, icon: <Home className="h-4 w-4" /> },
+    { href: '/app/tasks', label: t('myTasks'), icon: <CheckSquare className="h-4 w-4" /> },
+    { href: '/app/projects', label: t('projects'), icon: <FolderKanban className="h-4 w-4" /> },
+  ]
+}
 
 /**
  * Navigation globale (Client mode)
  */
-export const globalNavClient: NavItemConfig[] = [
-  { href: '/portal', label: 'Home', exact: true, icon: <Home className="h-4 w-4" /> },
-  { href: '/portal/projects', label: 'Projects', icon: <FolderKanban className="h-4 w-4" /> },
-]
+export function getGlobalNavClient(t: (key: string) => string): NavItemConfig[] {
+  return [
+    { href: '/portal', label: t('home'), exact: true, icon: <Home className="h-4 w-4" /> },
+    { href: '/portal/projects', label: t('projects'), icon: <FolderKanban className="h-4 w-4" /> },
+  ]
+}
 
 /**
  * Navigation projet (Internal mode)
  */
-export function getProjectNavInternal(projectId: string, basePath: '/app' | '/portal'): NavItemConfig[] {
+export function getProjectNavInternal(
+  projectId: string,
+  basePath: '/app' | '/portal',
+  t: (key: string) => string
+): NavItemConfig[] {
   return [
-    { href: `${basePath}/projects/${projectId}/overview`, label: 'Overview', icon: <LayoutDashboard className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/tasks`, label: 'Tasks', icon: <CheckSquare className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/epics`, label: 'Epics', icon: <Layers className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/time`, label: 'Time', icon: <Clock className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/invoices`, label: 'Invoices', icon: <Receipt className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/notes`, label: 'Notes', icon: <StickyNote className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/documents`, label: 'Documents', icon: <Files className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/settings`, label: 'Settings', icon: <Settings className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/overview`, label: t('overview'), icon: <LayoutDashboard className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/tasks`, label: t('tasks'), icon: <CheckSquare className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/epics`, label: t('epics'), icon: <Layers className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/time`, label: t('time'), icon: <Clock className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/invoices`, label: t('invoices'), icon: <Receipt className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/notes`, label: t('notes'), icon: <StickyNote className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/documents`, label: t('documents'), icon: <Files className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/settings`, label: t('settings'), icon: <SettingsIcon className="h-4 w-4" /> },
   ]
 }
 
 /**
  * Navigation projet (Client mode)
  */
-export function getProjectNavClient(projectId: string, basePath: '/app' | '/portal'): NavItemConfig[] {
+export function getProjectNavClient(
+  projectId: string,
+  basePath: '/app' | '/portal',
+  t: (key: string) => string
+): NavItemConfig[] {
   return [
-    { href: `${basePath}/projects/${projectId}/overview`, label: 'Overview', icon: <LayoutDashboard className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/tasks`, label: 'Tasks', icon: <CheckSquare className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/notes`, label: 'Notes', icon: <StickyNote className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/documents`, label: 'Documents', icon: <Files className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/invoices`, label: 'Invoices', icon: <Receipt className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/overview`, label: t('overview'), icon: <LayoutDashboard className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/tasks`, label: t('tasks'), icon: <CheckSquare className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/notes`, label: t('notes'), icon: <StickyNote className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/documents`, label: t('documents'), icon: <Files className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/invoices`, label: t('invoices'), icon: <Receipt className="h-4 w-4" /> },
   ]
 }
 
@@ -85,17 +97,18 @@ export function getProjectNavClient(projectId: string, basePath: '/app' | '/port
  */
 export function getNavigationConfig(
   mode: 'internal' | 'client',
-  basePath: '/app' | '/portal'
+  basePath: '/app' | '/portal',
+  t: (key: string) => string
 ): {
   global: NavItemConfig[]
   getProject: (projectId: string) => NavItemConfig[]
 } {
   return {
-    global: mode === 'internal' ? globalNavInternal : globalNavClient,
+    global: mode === 'internal' ? getGlobalNavInternal(t) : getGlobalNavClient(t),
     getProject: (projectId: string) =>
       mode === 'internal'
-        ? getProjectNavInternal(projectId, basePath)
-        : getProjectNavClient(projectId, basePath),
+        ? getProjectNavInternal(projectId, basePath, t)
+        : getProjectNavClient(projectId, basePath, t),
   }
 }
 

@@ -38,7 +38,8 @@ export function SegmentedControl({
   return (
     <div
       className={cn(
-        'inline-flex rounded-lg border border-border bg-muted p-1 shadow-sm',
+        'inline-flex rounded-md border border-sidebar-border/50 bg-sidebar-accent/30 p-0.5',
+        'backdrop-blur-sm',
         className
       )}
       role="radiogroup"
@@ -53,11 +54,13 @@ export function SegmentedControl({
           disabled={option.disabled}
           onClick={() => !option.disabled && onValueChange(option.value)}
           className={cn(
-            'relative flex-1 rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+            'relative flex-1 rounded-sm font-medium transition-all duration-200 ease-out',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1',
+            'disabled:pointer-events-none disabled:opacity-50',
             sizeClasses[size],
             option.value === value
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:bg-background/50 hover:text-foreground'
+              ? 'bg-sidebar text-sidebar-foreground shadow-sm font-semibold'
+              : 'text-sidebar-foreground/60 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50'
           )}
         >
           {option.label}

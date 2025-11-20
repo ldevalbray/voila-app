@@ -4,24 +4,23 @@ import * as React from 'react'
 import {
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
 } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
 
 interface SidebarSectionProps {
-  title: string
+  title?: string
   children: React.ReactNode
   className?: string
 }
 
 /**
- * Composant SidebarSection pour structurer les sections de la sidebar
- * Utilise les composants shadcn/ui SidebarGroup, SidebarGroupLabel, SidebarGroupContent
+ * SidebarSection avec design Linear-inspired
+ * Hiérarchie visuelle claire avec espacements généreux
  */
-export function SidebarSection({ title, children }: SidebarSectionProps) {
+export function SidebarSection({ children, className, title }: SidebarSectionProps) {
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>{title}</SidebarGroupLabel>
-      <SidebarGroupContent>
+    <SidebarGroup className={cn('px-0', className)}>
+      <SidebarGroupContent className="space-y-1 group-data-[collapsible=icon]:space-y-2">
         {children}
       </SidebarGroupContent>
     </SidebarGroup>

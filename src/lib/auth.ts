@@ -16,27 +16,37 @@ export interface User {
  * Retourne null si non authentifié.
  */
 export async function getCurrentUser(): Promise<User | null> {
-  const supabase = await createSupabaseServerClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  try {
+    const supabase = await createSupabaseServerClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-  if (!session?.user) {
+    if (!session?.user) {
+      return null
+    }
+
+    // Récupérer le profil depuis la table users
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single()
+
+    if (error) {
+      console.error('Error fetching user from database:', error)
+      return null
+    }
+
+    if (!user) {
+      return null
+    }
+
+    return user
+  } catch (error) {
+    console.error('Unexpected error in getCurrentUser:', error)
     return null
   }
-
-  // Récupérer le profil depuis la table users
-  const { data: user, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', session.user.id)
-    .single()
-
-  if (error || !user) {
-    return null
-  }
-
-  return user
 }
 
 /**

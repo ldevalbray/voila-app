@@ -1,68 +1,135 @@
 import { getInternalProjects } from '@/lib/projects'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { Building2 } from 'lucide-react'
+import { Building2, Plus, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { getTranslations } from 'next-intl/server'
 
 /**
  * Page de liste des projets (Internal mode)
- * Améliorée avec un layout cohérent et une meilleure hiérarchie visuelle
+ * Design moderne avec Table shadcn/ui
  */
 export default async function ProjectsPage() {
   const projects = await getInternalProjects()
+  const t = await getTranslations('projects')
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
+    <div className="flex-1 space-y-6 p-6 md:p-8">
       {/* Header */}
-      <div className="mb-8 space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Projects</h1>
-        <p className="text-base text-muted-foreground">
-          Liste des projets - Mode: Internal, Section: Global
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="text-muted-foreground">
+            {t('description')}
+          </p>
+        </div>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          {t('newProject')}
+        </Button>
       </div>
 
-      {/* Projects List */}
-      <div className="space-y-4">
-        {projects.length === 0 ? (
-          <div className="rounded-lg border border-border bg-card p-8 text-center shadow-sm">
-            <p className="text-sm text-muted-foreground">Aucun projet trouvé.</p>
-          </div>
-        ) : (
-          projects.map((project) => (
-            <Link
-              key={project.id}
-              href={`/app/projects/${project.id}/overview`}
-              className={cn(
-                'block rounded-lg border border-border bg-card p-6 shadow-sm',
-                'transition-all hover:shadow-md hover:border-primary/50',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
-              )}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-semibold text-card-foreground">
-                      {project.name}
-                    </h3>
-                    <Badge variant="secondary" className="text-xs">
-                      {project.status}
-                    </Badge>
-                  </div>
-                  {project.description && (
-                    <p className="text-sm text-muted-foreground">{project.description}</p>
-                  )}
-                  {project.client && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Building2 className="h-4 w-4" />
-                      <span>{project.client.name}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Link>
-          ))
-        )}
-      </div>
+      {/* Projects Table */}
+      {projects.length === 0 ? (
+        <Card className="border-border/50">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <Building2 className="h-16 w-16 text-muted-foreground/30 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">{t('noProjects')}</h3>
+            <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+              {t('noProjectsDescription')}
+            </p>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              {t('createFirstProject')}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg">{t('allProjects')}</CardTitle>
+            <CardDescription>
+              {t('projectsCount', { count: projects.length, plural: projects.length > 1 ? 's' : '' })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('project')}</TableHead>
+                  <TableHead>{t('client')}</TableHead>
+                  <TableHead>{t('status')}</TableHead>
+                  <TableHead className="text-right">{t('actions')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {projects.map((project) => (
+                  <TableRow
+                    key={project.id}
+                    className="hover:bg-muted/50 transition-colors cursor-pointer"
+                  >
+                    <TableCell>
+                      <Link
+                        href={`/app/projects/${project.id}/overview`}
+                        className="font-medium hover:underline"
+                      >
+                        {project.name}
+                      </Link>
+                      {project.description && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {project.description}
+                        </p>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {project.client ? (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                          <span>{project.client.name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={project.status === 'active' ? 'default' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {project.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Link href={`/app/projects/${project.id}/overview`}>
+                        <Button variant="ghost" size="sm">
+                          {t('view')}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

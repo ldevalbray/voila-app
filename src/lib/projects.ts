@@ -25,55 +25,70 @@ export interface Project {
  * En mode Internal, on peut voir tous les projets auxquels on a accès
  */
 export async function getInternalProjects(): Promise<Project[]> {
-  const supabase = await createSupabaseServerClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  try {
+    const supabase = await createSupabaseServerClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-  if (!session?.user) {
-    return []
-  }
-
-  const { data: memberships, error: membershipsError } = await supabase
-    .from('project_memberships')
-    .select('project_id, role')
-    .eq('user_id', session.user.id)
-    .in('role', ['project_admin', 'project_participant', 'project_client'])
-
-  if (membershipsError || !memberships || memberships.length === 0) {
-    return []
-  }
-
-  const projectIds = memberships.map((m) => m.project_id)
-
-  const { data: projects, error: projectsError } = await supabase
-    .from('projects')
-    .select(
-      `
-      *,
-      client:clients(id, name)
-    `
-    )
-    .in('id', projectIds)
-    .order('created_at', { ascending: false })
-
-  if (projectsError || !projects) {
-    return []
-  }
-
-  // Enrichir avec les informations de membership
-  return projects.map((project) => {
-    const membership = memberships.find((m) => m.project_id === project.id)
-    return {
-      ...project,
-      membership: membership
-        ? {
-            id: membership.project_id,
-            role: membership.role,
-          }
-        : undefined,
+    if (!session?.user) {
+      return []
     }
-  })
+
+    const { data: memberships, error: membershipsError } = await supabase
+      .from('project_memberships')
+      .select('project_id, role')
+      .eq('user_id', session.user.id)
+      .in('role', ['project_admin', 'project_participant', 'project_client'])
+
+    if (membershipsError) {
+      console.error('Error fetching project memberships:', membershipsError)
+      return []
+    }
+
+    if (!memberships || memberships.length === 0) {
+      return []
+    }
+
+    const projectIds = memberships.map((m) => m.project_id)
+
+    const { data: projects, error: projectsError } = await supabase
+      .from('projects')
+      .select(
+        `
+        *,
+        client:clients(id, name)
+      `
+      )
+      .in('id', projectIds)
+      .order('created_at', { ascending: false })
+
+    if (projectsError) {
+      console.error('Error fetching projects:', projectsError)
+      return []
+    }
+
+    if (!projects) {
+      return []
+    }
+
+    // Enrichir avec les informations de membership
+    return projects.map((project) => {
+      const membership = memberships.find((m) => m.project_id === project.id)
+      return {
+        ...project,
+        membership: membership
+          ? {
+              id: membership.project_id,
+              role: membership.role,
+            }
+          : undefined,
+      }
+    })
+  } catch (error) {
+    console.error('Unexpected error in getInternalProjects:', error)
+    return []
+  }
 }
 
 /**
@@ -81,55 +96,70 @@ export async function getInternalProjects(): Promise<Project[]> {
  * (project_client)
  */
 export async function getClientProjects(): Promise<Project[]> {
-  const supabase = await createSupabaseServerClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  try {
+    const supabase = await createSupabaseServerClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-  if (!session?.user) {
-    return []
-  }
-
-  const { data: memberships, error: membershipsError } = await supabase
-    .from('project_memberships')
-    .select('project_id, role')
-    .eq('user_id', session.user.id)
-    .eq('role', 'project_client')
-
-  if (membershipsError || !memberships || memberships.length === 0) {
-    return []
-  }
-
-  const projectIds = memberships.map((m) => m.project_id)
-
-  const { data: projects, error: projectsError } = await supabase
-    .from('projects')
-    .select(
-      `
-      *,
-      client:clients(id, name)
-    `
-    )
-    .in('id', projectIds)
-    .order('created_at', { ascending: false })
-
-  if (projectsError || !projects) {
-    return []
-  }
-
-  // Enrichir avec les informations de membership
-  return projects.map((project) => {
-    const membership = memberships.find((m) => m.project_id === project.id)
-    return {
-      ...project,
-      membership: membership
-        ? {
-            id: membership.project_id,
-            role: membership.role,
-          }
-        : undefined,
+    if (!session?.user) {
+      return []
     }
-  })
+
+    const { data: memberships, error: membershipsError } = await supabase
+      .from('project_memberships')
+      .select('project_id, role')
+      .eq('user_id', session.user.id)
+      .eq('role', 'project_client')
+
+    if (membershipsError) {
+      console.error('Error fetching client project memberships:', membershipsError)
+      return []
+    }
+
+    if (!memberships || memberships.length === 0) {
+      return []
+    }
+
+    const projectIds = memberships.map((m) => m.project_id)
+
+    const { data: projects, error: projectsError } = await supabase
+      .from('projects')
+      .select(
+        `
+        *,
+        client:clients(id, name)
+      `
+      )
+      .in('id', projectIds)
+      .order('created_at', { ascending: false })
+
+    if (projectsError) {
+      console.error('Error fetching client projects:', projectsError)
+      return []
+    }
+
+    if (!projects) {
+      return []
+    }
+
+    // Enrichir avec les informations de membership
+    return projects.map((project) => {
+      const membership = memberships.find((m) => m.project_id === project.id)
+      return {
+        ...project,
+        membership: membership
+          ? {
+              id: membership.project_id,
+              role: membership.role,
+            }
+          : undefined,
+      }
+    })
+  } catch (error) {
+    console.error('Unexpected error in getClientProjects:', error)
+    return []
+  }
 }
 
 /**

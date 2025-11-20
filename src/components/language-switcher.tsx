@@ -53,18 +53,15 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-sm font-medium text-muted-foreground">{t('switch')}:</span>
-      <SegmentedControl
-        options={[
-          { value: 'en', label: t('english'), disabled: loading },
-          { value: 'fr', label: t('french'), disabled: loading },
-        ]}
-        value={locale}
-        onValueChange={handleLanguageChange}
-        size="sm"
-      />
-    </div>
+    <SegmentedControl
+      options={[
+        { value: 'en', label: t('english'), disabled: loading },
+        { value: 'fr', label: t('french'), disabled: loading },
+      ]}
+      value={locale}
+      onValueChange={handleLanguageChange}
+      size="sm"
+    />
   )
 }
 

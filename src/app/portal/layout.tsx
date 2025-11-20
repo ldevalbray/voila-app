@@ -11,32 +11,45 @@ export default async function PortalLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Protéger la route : redirige vers /login si non authentifié
-  const user = await requireAuth()
-  const { hasInternalRole, hasClientRole } = await getUserModes()
+  try {
+    // Protéger la route : redirige vers /login si non authentifié
+    const user = await requireAuth()
+    const { hasInternalRole, hasClientRole } = await getUserModes()
 
-  // Si l'utilisateur n'a pas de rôle client mais a un rôle interne, rediriger vers /app
-  if (!hasClientRole && hasInternalRole) {
-    redirect('/app')
-  }
+    // Si l'utilisateur n'a pas de rôle client mais a un rôle interne, rediriger vers /app
+    if (!hasClientRole && hasInternalRole) {
+      redirect('/app')
+    }
 
-  // Récupérer les projets pour la sidebar
-  const projects = await getClientProjects()
+    // Récupérer les projets pour la sidebar
+    let projects
+    try {
+      projects = await getClientProjects()
+    } catch (error) {
+      console.error('Error fetching client projects:', error)
+      projects = []
+    }
 
-  return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full flex-col">
-        <TopBar
-          user={user}
-          hasInternalRole={hasInternalRole}
-          hasClientRole={hasClientRole}
-        />
-        <div className="flex flex-1 w-full overflow-hidden">
-          <SidebarWrapper mode="client" projects={projects} />
-          <main className="flex-1 w-full overflow-y-auto lg:ml-0">{children}</main>
+    return (
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full flex-col">
+          <TopBar
+            user={user}
+            hasInternalRole={hasInternalRole}
+            hasClientRole={hasClientRole}
+          />
+          <div className="flex flex-1 w-full overflow-hidden">
+            <SidebarWrapper mode="client" projects={projects} />
+            <main className="flex-1 w-full overflow-y-auto lg:ml-0">{children}</main>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
-  )
+      </SidebarProvider>
+    )
+  } catch (error) {
+    console.error('Error in PortalLayout:', error)
+    // En cas d'erreur critique, rediriger vers /login
+    redirect('/login')
+    return null
+  }
 }
 
