@@ -221,10 +221,15 @@ export function TaskDrawer({
                 <SheetTitle>
                   {t('taskDetails')}
                 </SheetTitle>
-                <div className="flex items-center gap-2 text-caption text-muted-foreground px-3 py-1 rounded-full bg-accent/50 backdrop-blur-sm border transition-all duration-300">
+                <div 
+                  className="flex items-center gap-2 text-caption text-muted-foreground px-3 py-1 rounded-full bg-accent/50 backdrop-blur-sm border transition-all duration-300"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
                   {isSaving && (
                     <>
-                      <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                      <Loader2 className="h-3 w-3 animate-spin text-primary" aria-hidden="true" />
                       <span className="font-medium">{tCommon('saving')}</span>
                     </>
                   )}

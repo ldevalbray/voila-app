@@ -79,6 +79,11 @@ export function OverviewPageClient({
   return (
     <div className="space-y-6">
       <PageToolbar
+        breadcrumbs={[
+          { label: t('home'), href: '/app' },
+          { label: t('projects'), href: '/app/projects' },
+          { label: project.name },
+        ]}
         filters={[<SprintPicker key="sprint" compact />]}
       />
 

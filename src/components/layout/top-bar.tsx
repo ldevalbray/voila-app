@@ -100,12 +100,26 @@ export function TopBar({ user, hasInternalRole, hasClientRole }: TopBarProps) {
                 'border-border/50'
               )}
               onClick={() => setIsCommandOpen(true)}
+              aria-label={t('search')}
             >
               <SearchIcon className="h-4 w-4 shrink-0" />
               <span className="hidden lg:inline-flex">{t('search')}</span>
               <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
                 <span className="text-xs">⌘</span>K
               </kbd>
+            </Button>
+          </div>
+
+          {/* Mobile: Search button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0"
+              onClick={() => setIsCommandOpen(true)}
+              aria-label={t('search')}
+            >
+              <SearchIcon className="h-4 w-4" />
             </Button>
           </div>
 

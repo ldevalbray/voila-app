@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
+import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 
 interface SearchConfig {
   placeholder?: string
@@ -16,9 +17,15 @@ interface SearchConfig {
   onExpandedChange?: (expanded: boolean) => void
 }
 
+interface BreadcrumbItem {
+  label: string
+  href?: string
+}
+
 interface PageToolbarProps {
   title?: string | ReactNode
   description?: string | ReactNode
+  breadcrumbs?: BreadcrumbItem[]
   search?: SearchConfig
   filters?: ReactNode[] // Array de composants de filtres
   viewSwitcher?: ReactNode // Composant SegmentedControl ou autre
@@ -34,6 +41,7 @@ interface PageToolbarProps {
 export function PageToolbar({
   title,
   description,
+  breadcrumbs,
   search,
   filters = [],
   viewSwitcher,
@@ -62,6 +70,13 @@ export function PageToolbar({
 
   return (
     <div className={cn('space-y-3', className)}>
+      {/* Breadcrumbs */}
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <div className="pt-4">
+          <Breadcrumbs items={breadcrumbs} />
+        </div>
+      )}
+      
       {/* Titre et description (optionnel) */}
       {(title || description) && (
         <div className="flex items-baseline justify-between gap-4 pt-4">

@@ -3,6 +3,7 @@ import localFont from 'next/font/local'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import './globals.css'
+import { ToastProvider } from '@/components/providers/toast-provider'
 
 const commitMono = localFont({
   src: [
@@ -36,6 +37,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider messages={messages}>
           {children}
+          <ToastProvider />
         </NextIntlClientProvider>
       </body>
     </html>
