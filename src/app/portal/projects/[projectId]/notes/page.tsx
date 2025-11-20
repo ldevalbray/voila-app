@@ -1,6 +1,6 @@
 import { getProjectById } from '@/lib/projects'
 import { notFound } from 'next/navigation'
-import { PageHeader } from '@/components/layout/page-header'
+import { PageToolbar } from '@/components/layout/page-toolbar'
 import { EmptyState } from '@/components/layout/empty-state'
 import { StickyNote } from 'lucide-react'
 import {
@@ -30,8 +30,8 @@ export default async function PortalProjectNotesPage({
   }
 
   return (
-    <div className="flex-1 space-y-6 p-6 md:p-8">
-      <PageHeader
+    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
+      <PageToolbar
         title={t('projectNotes')}
         description={t('notesDescription', { projectName: project.name })}
       />

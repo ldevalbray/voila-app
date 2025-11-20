@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
+import { PageToolbar } from '@/components/layout/page-toolbar'
 
 /**
  * Page overview d'un projet (Internal mode)
@@ -36,34 +37,41 @@ export default async function ProjectOverviewPage({
   const taskStats = await getTaskStats(projectId)
   const epics = await getEpicsByProjectId(projectId)
 
+  // Construire la description avec client et description
+  const descriptionParts = []
+  if (project.client) {
+    descriptionParts.push(project.client.name)
+  }
+  if (project.description) {
+    descriptionParts.push(project.description)
+  }
+
   return (
-    <div className="flex-1 space-y-6 p-6 md:p-8">
-      {/* Header */}
-      <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-              <Badge
-                variant={project.status === 'active' ? 'default' : 'secondary'}
-              >
-                {project.status}
-              </Badge>
-            </div>
-            {project.client && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Building2 className="h-4 w-4" />
-                <span>{project.client.name}</span>
-              </div>
-            )}
-            {project.description && (
-              <p className="text-muted-foreground max-w-2xl">
-                {project.description}
-              </p>
-            )}
+    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
+      <PageToolbar
+        title={
+          <div className="flex items-center gap-3">
+            <span>{project.name}</span>
+            <Badge
+              variant={project.status === 'active' ? 'default' : 'secondary'}
+            >
+              {project.status}
+            </Badge>
           </div>
-        </div>
-      </div>
+        }
+        description={
+          project.client ? (
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              <span>{project.client.name}</span>
+              {project.description && <span className="mx-2">•</span>}
+              {project.description && <span>{project.description}</span>}
+            </div>
+          ) : (
+            project.description
+          )
+        }
+      />
 
       {/* Content Sections */}
       <div className="grid gap-6 md:grid-cols-2">

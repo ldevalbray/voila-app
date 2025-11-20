@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/card'
 import { EmptyState } from '@/components/layout/empty-state'
 import { getTranslations } from 'next-intl/server'
+import { PageToolbar } from '@/components/layout/page-toolbar'
 
 /**
  * Page de liste des projets (Client mode)
@@ -30,14 +31,11 @@ export default async function PortalProjectsPage() {
   const t = await getTranslations('projects')
 
   return (
-    <div className="flex-1 space-y-6 p-6 md:p-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
-        <p className="text-muted-foreground">
-          {t('description')}
-        </p>
-      </div>
+    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
+      <PageToolbar
+        title={t('title')}
+        description={t('description')}
+      />
 
       {/* Projects Table */}
       {projects.length === 0 ? (

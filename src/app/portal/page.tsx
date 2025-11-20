@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { FolderKanban, Clock } from 'lucide-react'
+import { PageToolbar } from '@/components/layout/page-toolbar'
 
 /**
  * Page d'accueil client (Client mode)
@@ -13,14 +14,11 @@ import { FolderKanban, Clock } from 'lucide-react'
  */
 export default async function PortalHomePage() {
   return (
-    <div className="flex-1 space-y-8 p-6 md:p-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Home</h1>
-        <p className="text-muted-foreground">
-          Vue d'ensemble de vos projets
-        </p>
-      </div>
+    <div className="flex-1 space-y-8 px-6 pb-6 md:px-8 md:pb-8">
+      <PageToolbar
+        title="Home"
+        description="Vue d'ensemble de vos projets"
+      />
 
       {/* Main Content Sections */}
       <div className="grid gap-6 md:grid-cols-2">

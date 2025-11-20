@@ -1,6 +1,6 @@
 import { getProjectById } from '@/lib/projects'
 import { notFound } from 'next/navigation'
-import { PageHeader } from '@/components/layout/page-header'
+import { PageToolbar } from '@/components/layout/page-toolbar'
 import { EmptyState } from '@/components/layout/empty-state'
 import { StickyNote, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -31,11 +31,11 @@ export default async function ProjectNotesPage({
   }
 
   return (
-    <div className="flex-1 space-y-6 p-6 md:p-8">
-      <PageHeader
+    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
+      <PageToolbar
         title={t('projectNotes')}
         description={t('notesDescription', { projectName: project.name })}
-        action={
+        actions={
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             {t('newNote')}

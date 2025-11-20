@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Task } from '@/lib/tasks'
 import { Epic } from '@/lib/epics'
 import {
@@ -14,7 +14,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -26,7 +25,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
 import { SegmentedControl } from '@/components/ui/segmented-control'
-import { Plus, Search, Eye, EyeOff, X, Table2, LayoutGrid, ChevronDown } from 'lucide-react'
+import { PageToolbar } from '@/components/layout/page-toolbar'
+import { Plus, Eye, EyeOff, X, Table2, LayoutGrid, ChevronDown } from 'lucide-react'
 import { TaskForm } from './task-form'
 import { TasksKanbanView } from './tasks-kanban-view'
 import { TaskDrawer } from './task-drawer'
@@ -118,14 +118,6 @@ export function TasksList({
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [searchQuery, setSearchQuery] = useState(initialFilters?.search || '')
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
-  const searchInputRef = useRef<HTMLInputElement>(null)
-
-  // Focus sur l'input quand la barre s'ouvre
-  useEffect(() => {
-    if (isSearchExpanded && searchInputRef.current) {
-      searchInputRef.current.focus()
-    }
-  }, [isSearchExpanded])
   const [statusFilter, setStatusFilter] = useState<string[]>(
     initialFilters?.status || []
   )
@@ -315,197 +307,155 @@ export function TasksList({
     return `${typeFilter.length} ${t('filterType')}`
   }
 
+  // Préparer les filtres pour PageToolbar
+  const filterComponents = [
+    // Filtre Statut
+    <Popover key="status">
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            'h-9 text-body-sm justify-between min-w-[120px] max-w-[160px] flex-shrink-0',
+            statusFilter.length > 0 && 'bg-accent'
+          )}
+        >
+          <span className="truncate">{getStatusSelectLabel()}</span>
+          <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-56 p-2" align="start">
+        <div className="space-y-2">
+          {['todo', 'in_progress', 'blocked', 'waiting_for_client', 'done'].map((status) => (
+            <div
+              key={status}
+              className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
+              onClick={() => handleStatusMultiSelect(status, !statusFilter.includes(status))}
+            >
+              <Checkbox
+                checked={statusFilter.includes(status)}
+                onCheckedChange={(checked) => handleStatusMultiSelect(status, !!checked)}
+              />
+              <label className="text-body-sm cursor-pointer flex-1 flex items-center justify-between">
+                <span>{getTaskStatusLabel(status)}</span>
+                <span className="ml-2 text-caption text-muted-foreground">
+                  ({stats.by_status[status] || 0})
+                </span>
+              </label>
+            </div>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>,
+    // Filtre Type
+    <Popover key="type">
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            'h-9 text-body-sm justify-between min-w-[120px] max-w-[160px] flex-shrink-0',
+            typeFilter.length > 0 && 'bg-accent'
+          )}
+        >
+          <span className="truncate">{getTypeSelectLabel()}</span>
+          <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-56 p-2" align="start">
+        <div className="space-y-2">
+          {['bug', 'new_feature', 'improvement'].map((type) => (
+            <div
+              key={type}
+              className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
+              onClick={() => handleTypeMultiSelect(type, !typeFilter.includes(type))}
+            >
+              <Checkbox
+                checked={typeFilter.includes(type)}
+                onCheckedChange={(checked) => handleTypeMultiSelect(type, !!checked)}
+              />
+              <label className="text-body-sm cursor-pointer flex-1 flex items-center justify-between">
+                <span>{getTaskTypeLabel(type)}</span>
+                <span className="ml-2 text-caption text-muted-foreground">
+                  ({typeCounts[type] || 0})
+                </span>
+              </label>
+            </div>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>,
+    // Filtre Epic
+    <Select key="epic" value={epicFilter} onValueChange={handleEpicFilter}>
+      <SelectTrigger className="h-9 text-body-sm min-w-[160px] max-w-[200px] flex-shrink-0">
+        <SelectValue placeholder={t('filterByEpic')} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">{t('allEpics')}</SelectItem>
+        <SelectItem value="none">{t('noEpic')}</SelectItem>
+        {epics.map((epic) => (
+          <SelectItem key={epic.id} value={epic.id}>
+            {epic.title}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>,
+  ]
+
+  // Switch de vue
+  const viewSwitcher = (
+    <SegmentedControl
+      value={view}
+      onValueChange={(value) => handleViewChange(value as 'table' | 'kanban')}
+      options={[
+        {
+          value: 'table',
+          label: (
+            <span className="flex items-center gap-1.5">
+              <Table2 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{t('tableView')}</span>
+            </span>
+          ),
+        },
+        {
+          value: 'kanban',
+          label: (
+            <span className="flex items-center gap-1.5">
+              <LayoutGrid className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{t('kanbanView')}</span>
+            </span>
+          ),
+        },
+      ]}
+      size="md"
+      className="border-border bg-background"
+    />
+  )
+
   return (
     <div className="space-y-3">
-      {/* Barre d'outils - TOUT sur une seule ligne */}
-      <div className="flex items-center gap-3 flex-nowrap overflow-x-auto overflow-y-visible pt-3 pb-2 -mx-1 px-1">
-        {/* Barre de recherche expandable */}
-        {isSearchExpanded ? (
-          <div className="relative flex items-center flex-shrink-0">
-            <Search className="absolute left-2 h-4 w-4 text-muted-foreground" />
-            <Input
-              ref={searchInputRef}
-              placeholder={t('searchTasks')}
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              onBlur={(e) => {
-                // Ne pas fermer si on a une valeur
-                if (!e.target.value) {
-                  setIsSearchExpanded(false)
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  setIsSearchExpanded(false)
-                  setSearchQuery('')
-                  updateFilters({ search: undefined })
-                }
-              }}
-              className="pl-8 pr-8 h-9 w-64 max-w-[240px] transition-all duration-200 flex-shrink-0"
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setIsSearchExpanded(false)
-                setSearchQuery('')
-                updateFilters({ search: undefined })
-              }}
-              className="absolute right-1 h-7 w-7 p-0"
-            >
-              <X className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsSearchExpanded(true)}
-              className="h-9 w-9 p-0 flex-shrink-0 min-w-[36px]"
-            >
-            <Search className="h-4 w-4" />
+      {/* Barre d'outils avec PageToolbar */}
+      <PageToolbar
+        search={{
+          placeholder: t('searchTasks'),
+          value: searchQuery,
+          onChange: handleSearch,
+          onClear: () => {
+            setSearchQuery('')
+            updateFilters({ search: undefined })
+          },
+          expanded: isSearchExpanded,
+          onExpandedChange: setIsSearchExpanded,
+        }}
+        filters={filterComponents}
+        viewSwitcher={viewSwitcher}
+        actions={
+          <Button onClick={() => setIsCreateDialogOpen(true)} size="sm" className="flex-shrink-0">
+            <Plus className="mr-2 h-4 w-4" />
+            {t('newTask')}
           </Button>
-        )}
-
-        {/* Diviseur */}
-        <div className="h-6 w-px bg-border flex-shrink-0" />
-
-        {/* Multi-select Statut */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                'h-9 text-body-sm justify-between min-w-[120px] max-w-[160px] flex-shrink-0',
-                statusFilter.length > 0 && 'bg-accent'
-              )}
-            >
-              <span className="truncate">{getStatusSelectLabel()}</span>
-              <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-2" align="start">
-            <div className="space-y-2">
-              {['todo', 'in_progress', 'blocked', 'waiting_for_client', 'done'].map((status) => (
-                <div
-                  key={status}
-                  className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
-                  onClick={() => handleStatusMultiSelect(status, !statusFilter.includes(status))}
-                >
-                  <Checkbox
-                    checked={statusFilter.includes(status)}
-                    onCheckedChange={(checked) => handleStatusMultiSelect(status, !!checked)}
-                  />
-                  <label className="text-body-sm cursor-pointer flex-1 flex items-center justify-between">
-                    <span>{getTaskStatusLabel(status)}</span>
-                    <span className="ml-2 text-caption text-muted-foreground">
-                      ({stats.by_status[status] || 0})
-                    </span>
-                  </label>
-                </div>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        {/* Multi-select Type */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                'h-9 text-body-sm justify-between min-w-[120px] max-w-[160px] flex-shrink-0',
-                typeFilter.length > 0 && 'bg-accent'
-              )}
-            >
-              <span className="truncate">{getTypeSelectLabel()}</span>
-              <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-2" align="start">
-            <div className="space-y-2">
-              {['bug', 'new_feature', 'improvement'].map((type) => (
-                <div
-                  key={type}
-                  className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
-                  onClick={() => handleTypeMultiSelect(type, !typeFilter.includes(type))}
-                >
-                  <Checkbox
-                    checked={typeFilter.includes(type)}
-                    onCheckedChange={(checked) => handleTypeMultiSelect(type, !!checked)}
-                  />
-                  <label className="text-body-sm cursor-pointer flex-1 flex items-center justify-between">
-                    <span>{getTaskTypeLabel(type)}</span>
-                    <span className="ml-2 text-caption text-muted-foreground">
-                      ({typeCounts[type] || 0})
-                    </span>
-                  </label>
-                </div>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        {/* Select Epic (simple) */}
-        <Select value={epicFilter} onValueChange={handleEpicFilter}>
-          <SelectTrigger className="h-9 text-body-sm min-w-[160px] max-w-[200px] flex-shrink-0">
-            <SelectValue placeholder={t('filterByEpic')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('allEpics')}</SelectItem>
-            <SelectItem value="none">{t('noEpic')}</SelectItem>
-            {epics.map((epic) => (
-              <SelectItem key={epic.id} value={epic.id}>
-                {epic.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Espace flexible pour pousser le switch et le bouton à droite */}
-        <div className="flex-1" />
-
-        {/* Diviseur */}
-        <div className="h-6 w-px bg-border flex-shrink-0" />
-
-        {/* Switcher de vue */}
-        <div className="flex-shrink-0">
-          <SegmentedControl
-            value={view}
-            onValueChange={(value) => handleViewChange(value as 'table' | 'kanban')}
-            options={[
-              {
-                value: 'table',
-                label: (
-                  <span className="flex items-center gap-1.5">
-                    <Table2 className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">{t('tableView')}</span>
-                  </span>
-                ),
-              },
-              {
-                value: 'kanban',
-                label: (
-                  <span className="flex items-center gap-1.5">
-                    <LayoutGrid className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">{t('kanbanView')}</span>
-                  </span>
-                ),
-              },
-            ]}
-            size="md"
-            className="border-border bg-background"
-          />
-        </div>
-
-        {/* Bouton Nouvelle tâche */}
-        <Button onClick={() => setIsCreateDialogOpen(true)} size="sm" className="flex-shrink-0">
-          <Plus className="mr-2 h-4 w-4" />
-          {t('newTask')}
-        </Button>
-      </div>
+        }
+      />
 
       {/* Filtres actifs - ligne séparée si actifs (optionnel et compact) */}
       {hasActiveFilters && (

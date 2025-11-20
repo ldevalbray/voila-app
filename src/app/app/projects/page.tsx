@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { getTranslations } from 'next-intl/server'
+import { PageToolbar } from '@/components/layout/page-toolbar'
 
 /**
  * Page de liste des projets (Internal mode)
@@ -30,20 +31,17 @@ export default async function ProjectsPage() {
   const t = await getTranslations('projects')
 
   return (
-    <div className="flex-1 space-y-6 p-6 md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
-          <p className="text-muted-foreground">
-            {t('description')}
-          </p>
-        </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('newProject')}
-        </Button>
-      </div>
+    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
+      <PageToolbar
+        title={t('title')}
+        description={t('description')}
+        actions={
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            {t('newProject')}
+          </Button>
+        }
+      />
 
       {/* Projects Table */}
       {projects.length === 0 ? (

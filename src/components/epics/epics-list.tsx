@@ -10,10 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus } from 'lucide-react'
 import { EpicForm } from './epic-form'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -26,7 +24,6 @@ interface EpicsListProps {
 export function EpicsList({ projectId, epics }: EpicsListProps) {
   const t = useTranslations('projects')
   const router = useRouter()
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingEpic, setEditingEpic] = useState<Epic | null>(null)
 
   const getEpicStatusLabel = (status: string) => {
@@ -54,15 +51,9 @@ export function EpicsList({ projectId, epics }: EpicsListProps) {
 
   return (
     <div className="space-y-4">
-      {/* Actions */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="text-sm text-muted-foreground">
-          {epics.length} {t('epicsTotal')}
-        </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('newEpic')}
-        </Button>
+      {/* Compteur */}
+      <div className="text-body-sm text-muted-foreground">
+        {epics.length} {t('epicsTotal')}
       </div>
 
       {/* Liste des epics */}
@@ -113,17 +104,6 @@ export function EpicsList({ projectId, epics }: EpicsListProps) {
           )}
         </CardContent>
       </Card>
-
-      {/* Dialog de création */}
-      <EpicForm
-        projectId={projectId}
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        onSuccess={() => {
-          setIsCreateDialogOpen(false)
-          router.refresh()
-        }}
-      />
 
       {/* Dialog d'édition */}
       {editingEpic && (

@@ -52,7 +52,7 @@ export default async function ProjectTasksPage({
   const stats = await getTaskStats(projectId)
 
   return (
-    <div className="flex-1 space-y-6 p-6 md:p-8">
+    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
       <TasksList
         projectId={projectId}
         tasks={tasks}

@@ -8,6 +8,7 @@ import {
 import { Inbox, CheckSquare, Receipt, TrendingUp, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { PageToolbar } from '@/components/layout/page-toolbar'
 
 /**
  * Page d'accueil globale (Internal mode)
@@ -15,14 +16,11 @@ import { Button } from '@/components/ui/button'
  */
 export default async function AppHomePage() {
   return (
-    <div className="flex-1 space-y-8 p-6 md:p-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Home</h1>
-        <p className="text-muted-foreground">
-          Vue d'ensemble globale de vos projets et tâches
-        </p>
-      </div>
+    <div className="flex-1 space-y-8 px-6 pb-6 md:px-8 md:pb-8">
+      <PageToolbar
+        title="Home"
+        description="Vue d'ensemble globale de vos projets et tâches"
+      />
 
       {/* Stats Cards Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

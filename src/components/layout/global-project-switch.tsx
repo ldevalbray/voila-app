@@ -144,7 +144,7 @@ export function GlobalProjectSwitch({ basePath, projects }: GlobalProjectSwitchP
     <div className="w-full">
       <div
         className={cn(
-          'inline-flex w-full rounded-lg border border-sidebar-border/50 bg-sidebar-accent/30 p-1',
+          'inline-flex w-full rounded-lg border border-sidebar-border/50 bg-sidebar-accent/30 p-0',
           'backdrop-blur-sm transition-all duration-200',
           'hover:border-sidebar-border hover:bg-sidebar-accent/40'
         )}
