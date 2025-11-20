@@ -18,6 +18,7 @@ import { PageToolbar } from '@/components/layout/page-toolbar'
 import { useTranslations } from 'next-intl'
 import { Project } from '@/lib/projects'
 import { Epic } from '@/lib/epics'
+import { BillingSummaryWidget } from '@/components/invoices/billing-summary-widget'
 
 interface OverviewPageClientProps {
   projectId: string
@@ -204,6 +205,9 @@ export function OverviewPageClient({
             </div>
           </CardContent>
         </Card>
+
+        {/* Billing summary */}
+        <BillingSummaryWidget projectId={projectId} />
 
         {/* Quick actions */}
         <Card className="border-border/50">

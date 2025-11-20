@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 interface SearchConfig {
   placeholder?: string
@@ -39,6 +40,7 @@ export function PageToolbar({
   actions,
   className,
 }: PageToolbarProps) {
+  const t = useTranslations('ui')
   const [internalSearchExpanded, setInternalSearchExpanded] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   
@@ -87,7 +89,7 @@ export function PageToolbar({
                 <Search className="absolute left-2 h-4 w-4 text-muted-foreground" />
                 <Input
                   ref={searchInputRef}
-                  placeholder={search.placeholder || 'Rechercher...'}
+                  placeholder={search.placeholder || t('searchPlaceholder')}
                   value={search.value || ''}
                   onChange={(e) => search.onChange?.(e.target.value)}
                   onBlur={(e) => {

@@ -1,21 +1,12 @@
 import { getProjectById } from '@/lib/projects'
+import { getInvoices } from '@/lib/invoices'
 import { notFound } from 'next/navigation'
-import { PageToolbar } from '@/components/layout/page-toolbar'
-import { EmptyState } from '@/components/layout/empty-state'
-import { Receipt, Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { getTranslations } from 'next-intl/server'
+import { InvoicesPageClient } from './invoices-page-client'
 
 /**
  * Page Invoices d'un projet (Internal mode)
- * Design moderne avec placeholder
+ * Affiche la liste des factures du projet avec possibilité de créer/éditer
  */
 export default async function ProjectInvoicesPage({
   params,
@@ -30,35 +21,18 @@ export default async function ProjectInvoicesPage({
     notFound()
   }
 
+  // Récupérer les factures du projet
+  const invoices = await getInvoices({
+    project_id: projectId,
+  })
+
   return (
     <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={t('projectInvoices')}
-        description={t('invoicesDescription', { projectName: project.name })}
-        actions={
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('newInvoice')}
-          </Button>
-        }
+      <InvoicesPageClient
+        projectId={projectId}
+        project={project}
+        initialInvoices={invoices}
       />
-
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">{t('projectInvoices')}</CardTitle>
-          <CardDescription>
-            {t('invoicesDescription', { projectName: project.name })}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <EmptyState
-            icon={Receipt}
-            title={t('invoicesComingSoon')}
-            description={t('invoicesComingSoonDescription')}
-          />
-        </CardContent>
-      </Card>
     </div>
   )
 }
-

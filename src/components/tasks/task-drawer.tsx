@@ -267,7 +267,7 @@ export function TaskDrawer({
               }
               rows={6}
               className="resize-none input-modern transition-all duration-300"
-              placeholder={t('description') || 'Ajouter une description...'}
+              placeholder={t('description')}
             />
           </div>
 

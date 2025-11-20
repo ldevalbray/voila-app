@@ -747,9 +747,146 @@ Cette version n'inclut **pas** :
 
 Ces fonctionnalités seront ajoutées dans les prochaines étapes.
 
-## Prêt pour Step 6
+## Step 6 – Minimal Invoices as Ledger Credits
 
-Step 5 implémente Time tracking & Time ledger. Les éléments suivants seront ajoutés dans les prochaines étapes :
+Step 6 implémente un système de facturation minimal basé sur des **crédits dans le registre de temps**. Chaque facture représente un crédit contre le registre de temps d'un projet.
+
+### Migration SQL
+
+Exécuter la migration `supabase/migrations/007_create_invoices.sql` :
+
+Cette migration crée :
+- La table `invoices` avec RLS
+- Les index pour les performances
+- Les triggers pour `updated_at`
+- Les politiques RLS complètes
+
+### Modèle de données
+
+#### Table `invoices`
+
+- `id` : UUID, PK
+- `project_id` : UUID, FK → `projects.id` (not null)
+- `client_id` : UUID, FK → `clients.id` (not null, généralement identique à `projects.client_id`)
+- `label` : TEXT (not null) - libellé de la facture (ex: "Facture Mars 2025 – Sprint 3")
+- `status` : TEXT (not null, default 'draft') - valeurs autorisées :
+  - `draft` : Brouillon
+  - `sent` : Envoyée
+  - `paid` : Payée
+  - `cancelled` : Annulée
+- `currency` : TEXT (not null, default 'EUR') - code devise (EUR, USD, GBP, etc.)
+- `amount_cents` : BIGINT (not null) - montant total en centimes (unité mineure)
+- `billed_minutes` : INTEGER (not null) - durée facturée en minutes (crédit contre le registre de temps)
+- `issue_date` : DATE (not null) - date d'émission de la facture
+- `due_date` : DATE (nullable) - date d'échéance
+- `notes_internal` : TEXT (nullable) - notes internes (non visibles par le client)
+- `notes_client` : TEXT (nullable) - notes client (pour futur portail/PDF)
+- `created_by` : UUID, FK → `users.id` (not null)
+- `created_at` : TIMESTAMPTZ
+- `updated_at` : TIMESTAMPTZ
+
+**Important** : `billed_minutes` est traité comme un **crédit** contre le registre de temps. Il n'y a pas de lien direct 1:1 avec des `time_entries` spécifiques. La logique métier est libre de décider combien de minutes sont couvertes par une facture donnée.
+
+### RLS (Row Level Security)
+
+Les politiques RLS permettent :
+
+1. **SELECT** : Tous les membres d'un projet peuvent voir les factures de ce projet
+2. **INSERT** : Seuls les rôles internes (`project_admin`, `project_participant`) peuvent créer des factures
+3. **UPDATE** : Seuls les rôles internes peuvent modifier des factures
+4. **DELETE** : Seuls les `project_admin` peuvent supprimer des factures (pour conserver un audit trail, on peut aussi utiliser `status = 'cancelled'`)
+
+### Logique de registre (Ledger Logic)
+
+Pour chaque projet, on calcule :
+
+- **`total_logged_minutes`** : Somme de `time_entries.duration_minutes` pour ce projet
+- **`total_billed_minutes`** : Somme de `invoices.billed_minutes` pour ce projet où `status IN ('draft', 'sent', 'paid')` (factures non annulées)
+- **`unbilled_minutes`** : `total_logged_minutes - total_billed_minutes` (temps non facturé)
+
+Ces calculs sont effectués **au niveau application** (via `getBillingStats()`), pas dans la base de données.
+
+**Note** : On ne suit pas encore quelles `time_entries` spécifiques sont couvertes par quelle facture. C'est une simplification pour Step 6.
+
+### Vues UI
+
+#### 1. Page Invoices du projet – `/app/projects/[projectId]/invoices`
+
+Affiche la liste des factures du projet avec :
+- Tableau avec colonnes : Label, Statut, Date d'émission, Montant (formaté), Temps facturé
+- Tri par défaut : `issue_date` descendant
+- Bouton "Nouvelle facture" qui ouvre un formulaire
+- Clic sur une facture pour éditer (restrictions selon le statut, ex: ne pas modifier `amount_cents` si `status = 'paid'`)
+- Suppression possible uniquement pour les factures non payées (uniquement `project_admin`)
+
+#### 2. Formulaire Invoice
+
+Modal de création/édition avec :
+- **Label** (requis) : Libellé de la facture
+- **Statut** : draft, sent, paid, cancelled
+- **Devise** : EUR, USD, GBP (par défaut EUR)
+- **Montant** : Saisie en format majeur (ex: "1200,50"), converti en centimes
+- **Temps facturé** : Saisie en format "Xh Ym" (ex: "12h 30m"), converti en minutes
+- **Date d'émission** (requis, par défaut aujourd'hui)
+- **Date d'échéance** (optionnelle)
+- **Notes internes** (optionnel)
+- **Notes client** (optionnel)
+
+#### 3. Widget de résumé de facturation
+
+Affiché sur :
+- `/app/projects/[projectId]/overview` : Version complète avec :
+  - Temps total enregistré
+  - Temps total facturé
+  - Temps non facturé
+  - Pourcentage de couverture (si temps enregistré > 0)
+  - Lien vers la page Invoices
+- `/app/projects/[projectId]/time` : Version compacte avec :
+  - Temps non facturé
+  - Lien vers la page Invoices
+
+### Helpers TypeScript
+
+- `src/lib/invoices.ts` :
+  - `getInvoices()` : Récupère les factures avec filtres
+  - `getInvoiceById()` : Récupère une facture par ID
+  - `getBillingStats()` : Calcule les statistiques de facturation (total_logged_minutes, total_billed_minutes, unbilled_minutes)
+- `src/lib/billing-utils.ts` :
+  - `formatAmount()` : Convertit centimes en format monétaire lisible
+  - `parseAmountToCents()` : Convertit format majeur en centimes
+  - `formatBilledMinutes()` : Convertit minutes en format lisible
+  - `parseDurationToMinutes()` : Convertit format "Xh Ym" en minutes
+  - `calculateBillingCoverage()` : Calcule le pourcentage de couverture
+
+### Actions serveur
+
+- `src/lib/actions/invoices.ts` :
+  - `createInvoice()` : Crée une nouvelle facture
+  - `updateInvoice()` : Met à jour une facture (restrictions si status = 'paid')
+  - `deleteInvoice()` : Supprime une facture (uniquement `project_admin`)
+
+### Composants UI
+
+- `InvoiceForm` : Formulaire de création/édition de facture
+- `InvoicesPageClient` : Client pour la page Invoices du projet
+- `BillingSummaryWidget` : Widget de résumé de facturation (mode normal et compact)
+
+### Limitations Step 6
+
+Cette version n'inclut **pas** :
+
+- Lignes de facture (invoice line items)
+- Lien direct entre factures et `time_entries` spécifiques
+- Génération de PDF
+- Envoi d'email
+- Portail client pour visualiser les factures
+- Vue globale de facturation (`/app/billing`)
+
+Ces fonctionnalités seront ajoutées dans les prochaines étapes.
+
+## Prêt pour Step 7
+
+Step 6 implémente les factures minimales comme crédits dans le registre de temps. Les éléments suivants seront ajoutés dans les prochaines étapes :
 
 - UI de création/édition de sprints
 - Assignee selection dans l'UI
@@ -758,6 +895,8 @@ Step 5 implémente Time tracking & Time ledger. Les éléments suivants seront a
 - Tags
 - Comments
 - Documents
-- Facturation et tarifs horaires
-- Invoices
+- Liens détaillés entre factures et time entries
+- Génération PDF des factures
+- Envoi d'email des factures
+- Vue globale de facturation
 - Notifications

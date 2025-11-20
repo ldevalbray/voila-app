@@ -15,7 +15,8 @@
     "edit": "Edit",
     "create": "Create",
     "update": "Update",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "actions": "Actions"
   },
   "auth": {
     "login": {
@@ -192,6 +193,7 @@
     "filters": "Filters",
     "searchTasks": "Search tasks...",
     "filterByEpic": "Filter by epic",
+    "epics": "Epics",
     "allEpics": "All epics",
     "noEpic": "No epic",
     "noTasksFound": "No tasks found",
@@ -201,6 +203,7 @@
     "priority": "Priority",
     "epic": "Epic",
     "estimate": "Estimate",
+    "time": "Time",
     "clientVisible": "Client visible",
     "createdAt": "Created at",
     "updatedAt": "Updated at",
@@ -342,6 +345,66 @@
       "apply": "Apply",
       "allProjects": "All projects",
       "allUsers": "All users"
+    },
+    "invoices": {
+      "title": "Invoices",
+      "description": "Invoices for project {projectName}",
+      "newInvoice": "New invoice",
+      "editInvoice": "Edit invoice",
+      "editInvoiceDescription": "Edit invoice details",
+      "newInvoiceDescription": "Create a new invoice for this project",
+      "noInvoices": "No invoices",
+      "noInvoicesDescription": "You don't have any invoices for this project yet. Create your first invoice to get started.",
+      "noClient": "Missing client",
+      "noClientDescription": "This project does not have an associated client. Please associate a client to the project before creating an invoice.",
+      "label": "Label",
+      "labelPlaceholder": "Invoice March 2025 – Sprint 3",
+      "status": "Status",
+      "statusLabel": "Status",
+      "currency": "Currency",
+      "amount": "Amount",
+      "amountHint": "Ex: 1200.00",
+      "billedMinutes": "Billed time",
+      "billedMinutesHint": "Ex: 12.5h",
+      "issueDate": "Issue date",
+      "dueDate": "Due date",
+      "notesInternal": "Internal notes",
+      "notesInternalPlaceholder": "Internal notes (not visible to client)",
+      "notesClient": "Client notes",
+      "notesClientPlaceholder": "Notes visible to client",
+      "status": {
+        "draft": "Draft",
+        "sent": "Sent",
+        "paid": "Paid",
+        "cancelled": "Cancelled"
+      },
+      "deleteInvoiceConfirm": "Delete invoice?",
+      "deleteInvoiceConfirmDescription": "Are you sure you want to delete the invoice \"{label}\"? This action is irreversible.",
+      "errors": {
+        "labelRequired": "Label is required",
+        "amountRequired": "Amount is required",
+        "billedMinutesRequired": "Billed time is required"
+      }
+    },
+    "settings": {
+      "clientSection": "Project Client",
+      "clientSectionDescription": "Manage the client association for this project. A client must be associated to create invoices.",
+      "client": "Client",
+      "selectClient": "Select a client",
+      "noClient": "No client",
+      "currentClient": "Current client",
+      "clientHint": "Select the client associated with this project. You can remove the client by selecting 'No client'.",
+      "clientUpdatedSuccess": "Client updated successfully"
+    },
+    "billing": {
+      "summary": "Billing",
+      "summaryDescription": "Project billing summary",
+      "totalLogged": "Total logged time",
+      "totalBilled": "Total billed time",
+      "unbilled": "Unbilled time",
+      "coverage": "Coverage",
+      "viewInvoices": "View invoices",
+      "loading": "Loading..."
     }
   },
   "tasks": {
@@ -358,6 +421,41 @@
     "title": "Settings",
     "description": "Manage your account settings and preferences",
     "language": "Language"
+  },
+  "home": {
+    "title": "Home",
+    "description": "Global overview of your projects and tasks",
+    "descriptionPortal": "Overview of your projects",
+    "inbox": "Inbox",
+    "inboxTitle": "Inbox / Notifications",
+    "inboxDescription": "Your recent notifications and messages",
+    "pendingNotifications": "Pending notifications",
+    "noNotifications": "No notifications at the moment",
+    "myTasks": "My tasks",
+    "myTasksTitle": "My tasks",
+    "myTasksDescription": "Summary of your assigned tasks",
+    "assignedTasks": "Assigned tasks",
+    "noAssignedTasks": "No assigned tasks",
+    "viewAllTasks": "View all tasks",
+    "viewAll": "View all",
+    "projectsToInvoice": "Projects to invoice",
+    "projectsToInvoiceTitle": "Projects to invoice",
+    "projectsToInvoiceDescription": "Projects ready to be invoiced",
+    "projectsToBill": "Projects to bill",
+    "noProjectsToBill": "No projects to bill",
+    "quickStats": "Quick stats",
+    "quickStatsTitle": "Quick stats",
+    "quickStatsDescription": "Quick statistics of your projects",
+    "globalStats": "Global statistics",
+    "statsComingSoon": "Statistics coming soon",
+    "myProjects": "My projects",
+    "myProjectsTitle": "My projects",
+    "myProjectsDescription": "List of your projects",
+    "viewProjectsSection": "Check out your projects in the Projects section",
+    "recentActivity": "Recent activity",
+    "recentActivityTitle": "Recent activity",
+    "recentActivityDescription": "Recent activity on your projects",
+    "noRecentActivity": "No recent activity"
   }
 }
 

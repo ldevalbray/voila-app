@@ -15,7 +15,8 @@
     "edit": "Modifier",
     "create": "Créer",
     "update": "Mettre à jour",
-    "saving": "Enregistrement..."
+    "saving": "Enregistrement...",
+    "actions": "Actions"
   },
   "auth": {
     "login": {
@@ -192,6 +193,7 @@
     "filters": "Filtres",
     "searchTasks": "Rechercher des tâches...",
     "filterByEpic": "Filtrer par épopée",
+    "epics": "Épics",
     "allEpics": "Tous les épics",
     "noEpic": "Sans épopée",
     "noTasksFound": "Aucune tâche trouvée",
@@ -201,6 +203,7 @@
     "priority": "Priorité",
     "epic": "Épopée",
     "estimate": "Estimation",
+    "time": "Temps",
     "clientVisible": "Visible client",
     "createdAt": "Créé le",
     "updatedAt": "Modifié le",
@@ -342,6 +345,65 @@
       "apply": "Appliquer",
       "allProjects": "Tous les projets",
       "allUsers": "Tous les utilisateurs"
+    },
+    "invoices": {
+      "title": "Factures",
+      "description": "Factures du projet {projectName}",
+      "newInvoice": "Nouvelle facture",
+      "editInvoice": "Modifier la facture",
+      "editInvoiceDescription": "Modifiez les détails de la facture",
+      "newInvoiceDescription": "Créez une nouvelle facture pour ce projet",
+      "noInvoices": "Aucune facture",
+      "noInvoicesDescription": "Vous n'avez pas encore de factures pour ce projet. Créez votre première facture pour commencer.",
+      "noClient": "Client manquant",
+      "noClientDescription": "Ce projet n'a pas de client associé. Veuillez d'abord associer un client au projet avant de créer une facture.",
+      "label": "Libellé",
+      "labelPlaceholder": "Facture Mars 2025 – Sprint 3",
+      "statusLabel": "Statut",
+      "currency": "Devise",
+      "amount": "Montant",
+      "amountHint": "Ex: 1200,00",
+      "billedMinutes": "Temps facturé",
+      "billedMinutesHint": "Ex: 12.5h",
+      "issueDate": "Date d'émission",
+      "dueDate": "Date d'échéance",
+      "notesInternal": "Notes internes",
+      "notesInternalPlaceholder": "Notes internes (non visibles par le client)",
+      "notesClient": "Notes client",
+      "notesClientPlaceholder": "Notes visibles par le client",
+      "status": {
+        "draft": "Brouillon",
+        "sent": "Envoyée",
+        "paid": "Payée",
+        "cancelled": "Annulée"
+      },
+      "deleteInvoiceConfirm": "Supprimer la facture ?",
+      "deleteInvoiceConfirmDescription": "Êtes-vous sûr de vouloir supprimer la facture \"{label}\" ? Cette action est irréversible.",
+      "errors": {
+        "labelRequired": "Le libellé est requis",
+        "amountRequired": "Le montant est requis",
+        "billedMinutesRequired": "Le temps facturé est requis"
+      }
+    },
+    "settings": {
+      "clientSection": "Client du projet",
+      "clientSectionDescription": "Gérez l'association du client avec ce projet. Un client doit être associé pour pouvoir créer des factures.",
+      "client": "Client",
+      "selectClient": "Sélectionner un client",
+      "noClient": "Aucun client",
+      "currentClient": "Client actuel",
+      "clientHint": "Sélectionnez le client associé à ce projet. Vous pouvez retirer le client en sélectionnant 'Aucun client'.",
+      "clientUpdatedSuccess": "Client mis à jour avec succès"
+    },
+    "billing": {
+      "summary": "Facturation",
+      "summaryDescription": "Résumé de la facturation du projet",
+      "totalLogged": "Temps total enregistré",
+      "totalBilled": "Temps total facturé",
+      "unbilled": "Temps non facturé",
+      "coverage": "Couverture",
+      "viewInvoices": "Voir les factures",
+      "loading": "Chargement..."
     }
   },
   "tasks": {
@@ -358,6 +420,41 @@
     "title": "Paramètres",
     "description": "Gérez les paramètres et préférences de votre compte",
     "language": "Langue"
+  },
+  "home": {
+    "title": "Accueil",
+    "description": "Vue d'ensemble globale de vos projets et tâches",
+    "descriptionPortal": "Vue d'ensemble de vos projets",
+    "inbox": "Boîte de réception",
+    "inboxTitle": "Boîte de réception / Notifications",
+    "inboxDescription": "Vos notifications et messages récents",
+    "pendingNotifications": "Notifications en attente",
+    "noNotifications": "Aucune notification pour le moment",
+    "myTasks": "Mes tâches",
+    "myTasksTitle": "Mes tâches",
+    "myTasksDescription": "Résumé de vos tâches assignées",
+    "assignedTasks": "Tâches assignées",
+    "noAssignedTasks": "Aucune tâche assignée",
+    "viewAllTasks": "Voir toutes les tâches",
+    "viewAll": "Voir toutes",
+    "projectsToInvoice": "Projets à facturer",
+    "projectsToInvoiceTitle": "Projets à facturer",
+    "projectsToInvoiceDescription": "Projets prêts à être facturés",
+    "projectsToBill": "Projets à facturer",
+    "noProjectsToBill": "Aucun projet à facturer",
+    "quickStats": "Statistiques rapides",
+    "quickStatsTitle": "Statistiques rapides",
+    "quickStatsDescription": "Statistiques rapides de vos projets",
+    "globalStats": "Statistiques globales",
+    "statsComingSoon": "Statistiques à venir",
+    "myProjects": "Mes projets",
+    "myProjectsTitle": "Mes projets",
+    "myProjectsDescription": "Liste de vos projets",
+    "viewProjectsSection": "Consultez vos projets dans la section Projects",
+    "recentActivity": "Activité récente",
+    "recentActivityTitle": "Activité récente",
+    "recentActivityDescription": "Activité récente sur vos projets",
+    "noRecentActivity": "Aucune activité récente"
   }
 }
 

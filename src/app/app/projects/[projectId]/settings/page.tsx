@@ -1,20 +1,13 @@
 import { getProjectById } from '@/lib/projects'
+import { getAllClients } from '@/lib/clients'
 import { notFound } from 'next/navigation'
 import { PageToolbar } from '@/components/layout/page-toolbar'
-import { EmptyState } from '@/components/layout/empty-state'
-import { Settings } from 'lucide-react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { getTranslations } from 'next-intl/server'
+import { SettingsPageClient } from './settings-page-client'
 
 /**
  * Page Settings d'un projet (Internal mode)
- * Design moderne avec placeholder
+ * Permet de gérer les paramètres du projet (client, etc.)
  */
 export default async function ProjectSettingsPage({
   params,
@@ -23,6 +16,7 @@ export default async function ProjectSettingsPage({
 }) {
   const { projectId } = await params
   const project = await getProjectById(projectId, 'internal')
+  const clients = await getAllClients()
   const t = await getTranslations('projects')
 
   if (!project) {
@@ -36,21 +30,11 @@ export default async function ProjectSettingsPage({
         description={t('settingsDescription', { projectName: project.name })}
       />
 
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">{t('projectSettings')}</CardTitle>
-          <CardDescription>
-            {t('settingsDescription', { projectName: project.name })}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <EmptyState
-            icon={Settings}
-            title={t('settingsComingSoon')}
-            description={t('settingsComingSoonDescription')}
-          />
-        </CardContent>
-      </Card>
+      <SettingsPageClient
+        projectId={projectId}
+        project={project}
+        clients={clients}
+      />
     </div>
   )
 }

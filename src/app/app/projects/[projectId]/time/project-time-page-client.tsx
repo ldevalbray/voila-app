@@ -31,6 +31,7 @@ import { Plus, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TimeEntryForm } from '@/components/time/time-entry-form'
 import { useSprintContext } from '@/components/layout/sprint-context'
+import { BillingSummaryWidget } from '@/components/invoices/billing-summary-widget'
 
 interface ProjectTimePageClientProps {
   projectId: string
@@ -317,6 +318,9 @@ export function ProjectTimePageClient({
           </CardContent>
         </Card>
       </div>
+
+      {/* Billing summary (compact) */}
+      <BillingSummaryWidget projectId={projectId} compact />
 
       {/* Table */}
       <Card>
