@@ -53,8 +53,10 @@ async function runMigration() {
   console.log('      - Exécutez le script\n')
   console.log('   2. Via Supabase CLI (si installé) :')
   console.log('      supabase db push\n')
-  console.log('   3. Via psql directement :')
-  console.log(`      psql "${supabaseUrl.replace('https://', 'postgresql://postgres:[PASSWORD]@').replace('.supabase.co', '.supabase.co:5432')}/postgres" -f supabase/migrations/004_create_epics_tasks.sql\n`)
+    console.log('   3. Via psql directement :')
+    if (supabaseUrl) {
+      console.log(`      psql "${supabaseUrl.replace('https://', 'postgresql://postgres:[PASSWORD]@').replace('.supabase.co', '.supabase.co:5432')}/postgres" -f supabase/migrations/004_create_epics_tasks.sql\n`)
+    }
   
   console.log('📄 Contenu de la migration :')
   console.log('─'.repeat(60))

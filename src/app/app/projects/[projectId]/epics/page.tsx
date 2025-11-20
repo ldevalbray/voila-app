@@ -1,14 +1,15 @@
 import { getProjectById } from '@/lib/projects'
 import { getEpicsByProjectId } from '@/lib/epics'
+import { getSprintsByProjectId } from '@/lib/sprints'
 import { notFound } from 'next/navigation'
-import { PageToolbar } from '@/components/layout/page-toolbar'
 import { EpicsList } from '@/components/epics/epics-list'
+import { SprintsList } from '@/components/sprints/sprints-list'
 import { getTranslations } from 'next-intl/server'
 import { EpicsPageClient } from './epics-page-client'
 
 /**
- * Page Epics d'un projet (Internal mode)
- * Affiche la liste des epics avec création et édition
+ * Page Epics & Sprints d'un projet (Internal mode)
+ * Affiche la liste des epics et des sprints avec création et édition
  */
 export default async function ProjectEpicsPage({
   params,
@@ -24,17 +25,20 @@ export default async function ProjectEpicsPage({
   }
 
   const epics = await getEpicsByProjectId(projectId)
+  const sprints = await getSprintsByProjectId(projectId)
 
   return (
     <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
       <EpicsPageClient
         projectId={projectId}
-        title={t('projectEpics')}
-        description={t('epicsDescription', { projectName: project.name })}
         newEpicLabel={t('newEpic')}
+        newSprintLabel={t('newSprint')}
       />
 
-      <EpicsList projectId={projectId} epics={epics} />
+      <div className="space-y-6">
+        <EpicsList projectId={projectId} epics={epics} />
+        <SprintsList projectId={projectId} sprints={sprints} />
+      </div>
     </div>
   )
 }

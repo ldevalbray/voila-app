@@ -5,10 +5,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { CheckSquare, Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { CheckSquare } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { PageToolbar } from '@/components/layout/page-toolbar'
+import { getInternalProjects } from '@/lib/projects'
+import { getEpicsByProjectId } from '@/lib/epics'
+import { TasksPageClient } from './tasks-page-client'
 
 /**
  * Page "My tasks" globale (Internal mode)
@@ -16,6 +18,14 @@ import { PageToolbar } from '@/components/layout/page-toolbar'
  */
 export default async function TasksPage() {
   const t = await getTranslations('tasks')
+  const projects = await getInternalProjects()
+  
+  // Récupérer tous les épics de tous les projets
+  const allEpics = []
+  for (const project of projects) {
+    const epics = await getEpicsByProjectId(project.id)
+    allEpics.push(...epics)
+  }
   
   return (
     <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
@@ -23,10 +33,7 @@ export default async function TasksPage() {
         title={t('title')}
         description={t('description')}
         actions={
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('newTask')}
-          </Button>
+          <TasksPageClient projects={projects} epics={allEpics} variant="toolbar" />
         }
       />
 
@@ -45,10 +52,7 @@ export default async function TasksPage() {
             <p className="text-sm text-muted-foreground mb-6 max-w-sm">
               {t('noTasksDescription')}
             </p>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {t('createFirstTask')}
-            </Button>
+            <TasksPageClient projects={projects} epics={allEpics} variant="empty-state" />
           </div>
         </CardContent>
       </Card>

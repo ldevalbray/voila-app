@@ -4,6 +4,7 @@ export interface Task {
   id: string
   project_id: string
   epic_id: string | null
+  sprint_id: string | null
   title: string
   description: string | null
   type: 'bug' | 'new_feature' | 'improvement'
@@ -32,6 +33,7 @@ export interface TaskFilters {
   status?: string[]
   type?: string[]
   epic_id?: string | null
+  sprint_id?: string | null
   search?: string
 }
 
@@ -86,6 +88,17 @@ export async function getTasksByProjectId(
         query = query.is('epic_id', null)
       } else {
         query = query.eq('epic_id', filters.epic_id)
+      }
+    }
+
+    // Filtre par sprint
+    if (filters?.sprint_id !== undefined) {
+      if (filters.sprint_id === null) {
+        // null signifie "tous les sprints" - pas de filtre
+        // Mais si on veut explicitement les tâches sans sprint, on peut utiliser is('sprint_id', null)
+        // Pour l'instant, null = pas de filtre
+      } else {
+        query = query.eq('sprint_id', filters.sprint_id)
       }
     }
 
@@ -215,9 +228,13 @@ export async function getTaskById(taskId: string): Promise<Task | null> {
 /**
  * Récupère les statistiques des tâches d'un projet
  * @param projectId ID du projet
+ * @param sprintId ID du sprint optionnel pour filtrer les stats
  * @returns Statistiques des tâches
  */
-export async function getTaskStats(projectId: string): Promise<{
+export async function getTaskStats(
+  projectId: string,
+  sprintId?: string | null
+): Promise<{
   total: number
   by_status: Record<string, number>
   open_count: number
@@ -232,10 +249,17 @@ export async function getTaskStats(projectId: string): Promise<{
       return { total: 0, by_status: {}, open_count: 0 }
     }
 
-    const { data: tasks, error } = await supabase
+    let query = supabase
       .from('tasks')
       .select('status')
       .eq('project_id', projectId)
+
+    // Filtrer par sprint si spécifié
+    if (sprintId !== undefined && sprintId !== null) {
+      query = query.eq('sprint_id', sprintId)
+    }
+
+    const { data: tasks, error } = await query
 
     if (error) {
       console.error('Error fetching task stats:', error)

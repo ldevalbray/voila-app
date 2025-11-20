@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Task } from '@/lib/tasks'
 import { Epic } from '@/lib/epics'
 import { createTask, updateTask } from '@/lib/actions/tasks'
@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useTranslations } from 'next-intl'
+import { useSprintContext } from '@/components/layout/sprint-context'
+import { getSprintsByProjectIdAction } from '@/lib/actions/sprints'
 
 interface TaskFormProps {
   projectId: string
@@ -46,6 +48,15 @@ export function TaskForm({
   const tCommon = useTranslations('common')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // Récupérer le contexte sprint pour pré-remplir le sprint sélectionné
+  let sprintContext: ReturnType<typeof useSprintContext> | null = null
+  try {
+    sprintContext = useSprintContext()
+  } catch {
+    // Le contexte n'est pas disponible (par exemple dans un composant isolé)
+    // On continuera sans pré-remplir le sprint
+  }
 
   const [formData, setFormData] = useState({
     title: task?.title || '',
@@ -55,8 +66,29 @@ export function TaskForm({
     priority: task?.priority || 'medium',
     estimate_bucket: task?.estimate_bucket || null,
     epic_id: task?.epic_id || null,
+    sprint_id: task?.sprint_id || (sprintContext?.selectedSprintId || null),
     is_client_visible: task?.is_client_visible || false,
   })
+
+  // Charger les sprints du projet
+  const [sprints, setSprints] = useState<Array<{ id: string; name: string }>>([])
+  useEffect(() => {
+    if (open) {
+      getSprintsByProjectIdAction(projectId).then((sprintsList) => {
+        setSprints(sprintsList.map((s) => ({ id: s.id, name: s.name })))
+      })
+    }
+  }, [projectId, open])
+
+  // Mettre à jour sprint_id si le contexte change et qu'on crée une nouvelle tâche
+  useEffect(() => {
+    if (!task && sprintContext?.selectedSprintId) {
+      setFormData((prev) => ({
+        ...prev,
+        sprint_id: sprintContext?.selectedSprintId || null,
+      }))
+    }
+  }, [sprintContext?.selectedSprintId, task])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -251,26 +283,50 @@ export function TaskForm({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="epic_id">{t('epic')}</Label>
-            <Select
-              value={formData.epic_id || 'none'}
-              onValueChange={(value) =>
-                setFormData({ ...formData, epic_id: value === 'none' ? null : value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('noEpic')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t('noEpic')}</SelectItem>
-                {epics.map((epic) => (
-                  <SelectItem key={epic.id} value={epic.id}>
-                    {epic.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="epic_id">{t('epic')}</Label>
+              <Select
+                value={formData.epic_id || 'none'}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, epic_id: value === 'none' ? null : value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('noEpic')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t('noEpic')}</SelectItem>
+                  {epics.map((epic) => (
+                    <SelectItem key={epic.id} value={epic.id}>
+                      {epic.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sprint_id">{t('sprint')}</Label>
+              <Select
+                value={formData.sprint_id || 'none'}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, sprint_id: value === 'none' ? null : value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('noSprint')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t('noSprint')}</SelectItem>
+                  {sprints.map((sprint) => (
+                    <SelectItem key={sprint.id} value={sprint.id}>
+                      {sprint.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="flex items-center space-x-2">

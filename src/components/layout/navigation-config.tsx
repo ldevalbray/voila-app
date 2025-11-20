@@ -41,6 +41,7 @@ export function getGlobalNavInternal(t: (key: string) => string): NavItemConfig[
   return [
     { href: '/app', label: t('home'), exact: true, icon: <Home className="h-4 w-4" /> },
     { href: '/app/tasks', label: t('myTasks'), icon: <CheckSquare className="h-4 w-4" /> },
+    { href: '/app/my-time', label: t('myTime'), icon: <Clock className="h-4 w-4" /> },
     { href: '/app/projects', label: t('projects'), icon: <FolderKanban className="h-4 w-4" /> },
   ]
 }
@@ -66,7 +67,7 @@ export function getProjectNavInternal(
   return [
     { href: `${basePath}/projects/${projectId}/overview`, label: t('overview'), icon: <LayoutDashboard className="h-4 w-4" /> },
     { href: `${basePath}/projects/${projectId}/tasks`, label: t('tasks'), icon: <CheckSquare className="h-4 w-4" /> },
-    { href: `${basePath}/projects/${projectId}/epics`, label: t('epics'), icon: <Layers className="h-4 w-4" /> },
+    { href: `${basePath}/projects/${projectId}/epics`, label: t('epicsAndSprints'), icon: <Layers className="h-4 w-4" /> },
     { href: `${basePath}/projects/${projectId}/time`, label: t('time'), icon: <Clock className="h-4 w-4" /> },
     { href: `${basePath}/projects/${projectId}/invoices`, label: t('invoices'), icon: <Receipt className="h-4 w-4" /> },
     { href: `${basePath}/projects/${projectId}/notes`, label: t('notes'), icon: <StickyNote className="h-4 w-4" /> },

@@ -22,7 +22,7 @@ export default async function AppLayout({
     }
 
     // Récupérer les projets pour la sidebar
-    let projects
+    let projects: Awaited<ReturnType<typeof getInternalProjects>>
     try {
       projects = await getInternalProjects()
     } catch (error) {

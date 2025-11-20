@@ -7,6 +7,7 @@ import { getTranslations } from 'next-intl/server'
 export interface CreateTaskInput {
   project_id: string
   epic_id?: string | null
+  sprint_id?: string | null
   title: string
   description?: string | null
   type: 'bug' | 'new_feature' | 'improvement'
@@ -19,6 +20,7 @@ export interface CreateTaskInput {
 export interface UpdateTaskInput {
   id: string
   epic_id?: string | null
+  sprint_id?: string | null
   title?: string
   description?: string | null
   type?: 'bug' | 'new_feature' | 'improvement'
@@ -48,6 +50,7 @@ export async function createTask(input: CreateTaskInput) {
       .insert({
         project_id: input.project_id,
         epic_id: input.epic_id || null,
+        sprint_id: input.sprint_id || null,
         title: input.title,
         description: input.description || null,
         type: input.type,
@@ -96,6 +99,7 @@ export async function updateTask(input: UpdateTaskInput) {
     }
 
     if (input.epic_id !== undefined) updateData.epic_id = input.epic_id
+    if (input.sprint_id !== undefined) updateData.sprint_id = input.sprint_id
     if (input.title !== undefined) updateData.title = input.title
     if (input.description !== undefined) updateData.description = input.description
     if (input.type !== undefined) updateData.type = input.type

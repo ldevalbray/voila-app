@@ -1,5 +1,4 @@
 import { getRequestConfig } from 'next-intl/server'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { defaultLocale, isValidLocale, type Locale } from './i18n/config'
 import { cookies } from 'next/headers'
 
@@ -9,6 +8,8 @@ import { cookies } from 'next/headers'
  */
 async function getUserLocale(): Promise<Locale> {
   try {
+    // Dynamic import to avoid bundling supabase-server in client context
+    const { createSupabaseServerClient } = await import('@/lib/supabase-server')
     const supabase = await createSupabaseServerClient()
     const {
       data: { session },

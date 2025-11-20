@@ -144,6 +144,11 @@ export function PageToolbar({
           </div>
         ))}
 
+        {/* Espace flexible pour pousser les éléments de droite à droite */}
+        {!hasLeftContent && (viewSwitcher || actions) && (
+          <div className="flex-1" />
+        )}
+
         {/* Diviseur avant les éléments de droite si on a du contenu à gauche */}
         {hasLeftContent && (viewSwitcher || actions) && (
           <>

@@ -2,12 +2,13 @@ import { getProjectById } from '@/lib/projects'
 import { getTasksByProjectId, getTaskStats } from '@/lib/tasks'
 import { getEpicsByProjectId } from '@/lib/epics'
 import { notFound } from 'next/navigation'
-import { TasksList } from '@/components/tasks/tasks-list'
+import { TasksPageClient } from './tasks-page-client'
 import { getTranslations } from 'next-intl/server'
 
 /**
  * Page Tasks d'un projet (Internal mode)
  * Affiche la liste des tâches avec filtres et création/édition
+ * Utilise le contexte sprint pour filtrer les tâches
  */
 export default async function ProjectTasksPage({
   params,
@@ -30,7 +31,7 @@ export default async function ProjectTasksPage({
     notFound()
   }
 
-  // Récupérer les tâches avec filtres
+  // Récupérer les tâches avec filtres (sans filtre sprint pour l'instant, le client le fera)
   const statusFilter = searchParamsResolved.status
     ? searchParamsResolved.status.split(',')
     : undefined
@@ -43,21 +44,22 @@ export default async function ProjectTasksPage({
     type: typeFilter,
     epic_id: searchParamsResolved.epic_id || undefined,
     search: searchParamsResolved.search,
+    // Ne pas filtrer par sprint ici, le client le fera selon le contexte
   })
 
   // Récupérer les epics pour le filtre
   const epics = await getEpicsByProjectId(projectId)
 
-  // Récupérer les stats pour l'overview
+  // Récupérer les stats pour l'overview (sans filtre sprint pour l'instant)
   const stats = await getTaskStats(projectId)
 
   return (
     <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <TasksList
+      <TasksPageClient
         projectId={projectId}
-        tasks={tasks}
+        initialTasks={tasks}
         epics={epics}
-        stats={stats}
+        initialStats={stats}
         initialFilters={{
           status: statusFilter,
           type: typeFilter,

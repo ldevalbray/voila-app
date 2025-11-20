@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { PageToolbar } from '@/components/layout/page-toolbar'
+import { OverviewPageClient } from './overview-page-client'
 
 /**
  * Page overview d'un projet (Internal mode)
@@ -33,7 +34,7 @@ export default async function ProjectOverviewPage({
     notFound()
   }
 
-  // Récupérer les stats des tâches et epics
+  // Récupérer les stats des tâches et epics (sans filtre sprint pour l'instant)
   const taskStats = await getTaskStats(projectId)
   const epics = await getEpicsByProjectId(projectId)
 
@@ -48,168 +49,12 @@ export default async function ProjectOverviewPage({
 
   return (
     <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={
-          <div className="flex items-center gap-3">
-            <span>{project.name}</span>
-            <Badge
-              variant={project.status === 'active' ? 'default' : 'secondary'}
-            >
-              {project.status}
-            </Badge>
-          </div>
-        }
-        description={
-          project.client ? (
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              <span>{project.client.name}</span>
-              {project.description && <span className="mx-2">•</span>}
-              {project.description && <span>{project.description}</span>}
-            </div>
-          ) : (
-            project.description
-          )
-        }
+      <OverviewPageClient
+        projectId={projectId}
+        project={project}
+        initialTaskStats={taskStats}
+        epics={epics}
       />
-
-      {/* Content Sections */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Summary */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">{t('summary')}</CardTitle>
-            <CardDescription>
-              {t('summaryDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">{t('status')}</span>
-                <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
-                  {project.status}
-                </Badge>
-              </div>
-              {project.client && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">{t('client')}</span>
-                  <span className="text-sm font-medium">{project.client.name}</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tasks stats */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">{t('tasksOverview')}</CardTitle>
-            <CardDescription>
-              {t('tasksOverviewDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CheckSquare className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {t('totalTasks')}
-                  </span>
-                </div>
-                <span className="text-lg font-semibold">
-                  {taskStats.total}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CheckSquare className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {t('openTasks')}
-                  </span>
-                </div>
-                <span className="text-lg font-semibold">
-                  {taskStats.open_count}
-                </span>
-              </div>
-              <div className="pt-2 border-t">
-                <Link href={`/app/projects/${projectId}/tasks`}>
-                  <Button variant="outline" size="sm" className="w-full">
-                    <LinkIcon className="mr-2 h-4 w-4" />
-                    {t('viewAllTasks')}
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Epics stats */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">{t('epicsOverview')}</CardTitle>
-            <CardDescription>
-              {t('epicsOverviewDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {t('totalEpics')}
-                  </span>
-                </div>
-                <span className="text-lg font-semibold">{epics.length}</span>
-              </div>
-              <div className="pt-2 border-t">
-                <Link href={`/app/projects/${projectId}/epics`}>
-                  <Button variant="outline" size="sm" className="w-full">
-                    <LinkIcon className="mr-2 h-4 w-4" />
-                    {t('viewAllEpics')}
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Last notes */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">{t('lastNotes')}</CardTitle>
-            <CardDescription>
-              {t('lastNotesDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                {t('noRecentNotes')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick actions */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">{t('quickActions')}</CardTitle>
-            <CardDescription>
-              {t('quickActionsDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                {t('actionsComingSoon')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }

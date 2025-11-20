@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Epic } from '@/lib/epics'
 import {
   Table,
@@ -15,6 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { EpicForm } from './epic-form'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
+import { useSprintContext } from '@/components/layout/sprint-context'
+import { createSupabaseBrowserClient } from '@/lib/supabase-client'
 
 interface EpicsListProps {
   projectId: string
@@ -25,6 +27,56 @@ export function EpicsList({ projectId, epics }: EpicsListProps) {
   const t = useTranslations('projects')
   const router = useRouter()
   const [editingEpic, setEditingEpic] = useState<Epic | null>(null)
+  const { selectedSprintId } = useSprintContext()
+  const [sprintTaskCounts, setSprintTaskCounts] = useState<Record<string, number>>({})
+
+  // Récupérer le nombre de tâches par epic dans le sprint sélectionné
+  useEffect(() => {
+    const loadSprintTaskCounts = async () => {
+      if (!selectedSprintId) {
+        setSprintTaskCounts({})
+        return
+      }
+
+      try {
+        const supabase = createSupabaseBrowserClient()
+        const epicIds = epics.map((e) => e.id)
+        
+        if (epicIds.length === 0) {
+          setSprintTaskCounts({})
+          return
+        }
+
+        const { data: tasks, error } = await supabase
+          .from('tasks')
+          .select('epic_id')
+          .eq('project_id', projectId)
+          .eq('sprint_id', selectedSprintId)
+          .in('epic_id', epicIds)
+
+        if (error) {
+          console.error('Error fetching sprint task counts:', error)
+          setSprintTaskCounts({})
+          return
+        }
+
+        // Compter les tâches par epic
+        const counts: Record<string, number> = {}
+        tasks?.forEach((task) => {
+          if (task.epic_id) {
+            counts[task.epic_id] = (counts[task.epic_id] || 0) + 1
+          }
+        })
+
+        setSprintTaskCounts(counts)
+      } catch (error) {
+        console.error('Unexpected error loading sprint task counts:', error)
+        setSprintTaskCounts({})
+      }
+    }
+
+    loadSprintTaskCounts()
+  }, [projectId, selectedSprintId, epics])
 
   const getEpicStatusLabel = (status: string) => {
     const statusMap: Record<string, string> = {
@@ -74,7 +126,9 @@ export function EpicsList({ projectId, epics }: EpicsListProps) {
                 <TableRow>
                   <TableHead>{t('title')}</TableHead>
                   <TableHead>{t('status')}</TableHead>
-                  <TableHead>{t('tasksCount')}</TableHead>
+                  <TableHead>
+                    {selectedSprintId ? t('tasksInSprint') : t('tasksCount')}
+                  </TableHead>
                   <TableHead>{t('createdAt')}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -92,7 +146,18 @@ export function EpicsList({ projectId, epics }: EpicsListProps) {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{epic.tasks_count || 0}</Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">
+                          {selectedSprintId
+                            ? sprintTaskCounts[epic.id] || 0
+                            : epic.tasks_count || 0}
+                        </Badge>
+                        {selectedSprintId && epic.tasks_count !== undefined && (
+                          <span className="text-xs text-muted-foreground">
+                            / {epic.tasks_count}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(epic.created_at).toLocaleDateString('fr-FR')}

@@ -5,43 +5,60 @@ import { PageToolbar } from '@/components/layout/page-toolbar'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { EpicForm } from '@/components/epics/epic-form'
+import { SprintForm } from '@/components/sprints/sprint-form'
 import { useRouter } from 'next/navigation'
 
 interface EpicsPageClientProps {
   projectId: string
-  title: string
-  description: string
   newEpicLabel: string
+  newSprintLabel: string
 }
 
 export function EpicsPageClient({
   projectId,
-  title,
-  description,
   newEpicLabel,
+  newSprintLabel,
 }: EpicsPageClientProps) {
   const router = useRouter()
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isCreateEpicDialogOpen, setIsCreateEpicDialogOpen] = useState(false)
+  const [isCreateSprintDialogOpen, setIsCreateSprintDialogOpen] = useState(false)
 
   return (
     <>
       <PageToolbar
-        title={title}
-        description={description}
         actions={
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            {newEpicLabel}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateSprintDialogOpen(true)}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {newSprintLabel}
+            </Button>
+            <Button onClick={() => setIsCreateEpicDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              {newEpicLabel}
+            </Button>
+          </div>
         }
       />
 
       <EpicForm
         projectId={projectId}
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
+        open={isCreateEpicDialogOpen}
+        onOpenChange={setIsCreateEpicDialogOpen}
         onSuccess={() => {
-          setIsCreateDialogOpen(false)
+          setIsCreateEpicDialogOpen(false)
+          router.refresh()
+        }}
+      />
+
+      <SprintForm
+        projectId={projectId}
+        open={isCreateSprintDialogOpen}
+        onOpenChange={setIsCreateSprintDialogOpen}
+        onSuccess={() => {
+          setIsCreateSprintDialogOpen(false)
           router.refresh()
         }}
       />

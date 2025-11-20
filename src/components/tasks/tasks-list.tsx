@@ -26,13 +26,15 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { PageToolbar } from '@/components/layout/page-toolbar'
-import { Plus, Eye, EyeOff, X, Table2, LayoutGrid, ChevronDown } from 'lucide-react'
+import { Plus, Eye, EyeOff, X, Table2, LayoutGrid, ChevronDown, Search } from 'lucide-react'
 import { TaskForm } from './task-form'
 import { TasksKanbanView } from './tasks-kanban-view'
 import { TaskDrawer } from './task-drawer'
 import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { SprintPicker } from '@/components/layout/sprint-picker'
+import { TaskTimeBadge } from '@/components/time/task-time-badge'
 
 const TASKS_VIEW_KEY = 'voila_tasks_view'
 
@@ -388,7 +390,7 @@ export function TasksList({
     // Filtre Epic
     <Select key="epic" value={epicFilter} onValueChange={handleEpicFilter}>
       <SelectTrigger className="h-9 text-body-sm min-w-[160px] max-w-[200px] flex-shrink-0">
-        <SelectValue placeholder={t('filterByEpic')} />
+        <SelectValue placeholder={t('epics')} />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="all">{t('allEpics')}</SelectItem>
@@ -400,6 +402,8 @@ export function TasksList({
         ))}
       </SelectContent>
     </Select>,
+    // Filtre Sprint
+    <SprintPicker key="sprint" compact />,
   ]
 
   // Switch de vue
@@ -551,6 +555,7 @@ export function TasksList({
                       <TableHead>{t('priority')}</TableHead>
                       <TableHead>{t('epic')}</TableHead>
                       <TableHead>{t('estimate')}</TableHead>
+                      <TableHead className="w-[100px]">{t('time')}</TableHead>
                       <TableHead className="w-[80px]">{t('clientVisible')}</TableHead>
                       <TableHead className="w-[100px]">{t('createdAt')}</TableHead>
                     </TableRow>
@@ -565,6 +570,7 @@ export function TasksList({
                         <TableCell className="font-medium">
                           <div className="flex items-start gap-2">
                             <span className="line-clamp-1">{task.title}</span>
+                            <TaskTimeBadge taskId={task.id} />
                           </div>
                         </TableCell>
                         <TableCell>
@@ -605,6 +611,9 @@ export function TasksList({
                           ) : (
                             <span className="text-muted-foreground text-caption">—</span>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <TaskTimeBadge taskId={task.id} />
                         </TableCell>
                         <TableCell>
                           {task.is_client_visible ? (

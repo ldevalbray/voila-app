@@ -25,6 +25,7 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { TaskTimeSection } from '@/components/time/task-time-section'
 
 interface TaskDrawerProps {
   task: Task | null
@@ -468,6 +469,15 @@ export function TaskDrawer({
                 </Badge>
               )}
             </div>
+          </div>
+
+          {/* Section Temps */}
+          <div className="animate-slide-up-fade" style={{ animationDelay: '0.35s', animationFillMode: 'both', animationDuration: '0.3s' }}>
+            <TaskTimeSection
+              taskId={task.id}
+              projectId={task.project_id}
+              taskTitle={task.title}
+            />
           </div>
 
           {/* Métadonnées de la tâche */}

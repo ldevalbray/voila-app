@@ -369,7 +369,7 @@ Step 3 introduit trois nouvelles tables :
 
 #### 1. `epics`
 
-Table pour les épopées (groupes de tâches) :
+Table pour les épics (groupes de tâches) :
 
 - `id` (UUID, PK)
 - `project_id` (UUID, FK vers `projects.id`)
@@ -510,17 +510,254 @@ Ces fonctionnalités seront ajoutées dans les prochaines étapes.
 - `src/lib/tasks.ts` : `getTasksByProjectId`, `getTaskById`, `getTaskStats`
 - `src/lib/epics.ts` : `getEpicsByProjectId`, `getEpicById`
 
-## Prêt pour Step 4
+## Step 4 – Sprints & Sprint picker
 
-Step 3 implémente Epics & Tasks V1. Les éléments suivants seront ajoutés dans les prochaines étapes :
+Step 4 introduit les **Sprints** et un **Sprint picker** au niveau du projet, permettant de filtrer les tâches et les vues par sprint.
 
+### Modèle de données
+
+Step 4 introduit une nouvelle table et modifie la table `tasks` :
+
+#### 1. `sprints`
+
+Table pour les sprints (périodes de travail) :
+
+- `id` (UUID, PK)
+- `project_id` (UUID, FK vers `projects.id`)
+- `name` (text, not null) - ex: "Sprint 1", "MVP phase", "2025-01"
+- `goal` (text, nullable)
+- `status` (text, valeurs : `'planned'`, `'active'`, `'completed'`, `'cancelled'`, `'archived'`, default `'planned'`)
+- `start_date` (date, nullable)
+- `end_date` (date, nullable)
+- `sort_index` (integer, nullable) - pour l'ordre manuel
+- `created_by` (UUID, FK vers `users.id`)
+- `created_at`, `updated_at` (timestamps)
+
+**Note importante** : Un seul sprint par projet devrait être `status = 'active'` à la fois. Cette contrainte est gérée au niveau application pour Step 4 (pas encore de contrainte DB).
+
+#### 2. Modification de `tasks`
+
+Ajout de la colonne `sprint_id` :
+
+- `tasks.sprint_id` (UUID, nullable, FK vers `sprints.id`)
+
+**Comportement** :
+- Une tâche appartient à **au plus un sprint** (single `sprint_id`)
+- `sprint_id` doit référencer un sprint du même projet que la tâche
+- Cette contrainte est vérifiée au niveau application pour Step 4
+
+### RLS (Row Level Security)
+
+Les politiques RLS sont configurées pour `sprints` :
+
+1. **`SELECT`** : Tous les membres du projet peuvent voir les sprints
+2. **`INSERT`, `UPDATE`, `DELETE`** : Seulement les rôles internes (`project_admin`, `project_participant`)
+
+### Contexte Sprint au niveau projet
+
+Un **contexte React** (`SprintContext`) gère la sélection de sprint par projet :
+
+- **Sélection par défaut** :
+  - Si un sprint actif existe → il est sélectionné automatiquement
+  - Sinon → "Tous les sprints" (pas de filtre)
+- **Persistance** : La sélection est stockée dans `localStorage` par projet
+- **Navigation** : La sélection est conservée lors de la navigation entre Tasks/Epics/Overview
+
+### Fonctionnalités UI
+
+#### Sprint Picker
+
+Un composant `SprintPicker` permet de sélectionner :
+- "Tous les sprints" (affiche toutes les tâches)
+- Un sprint spécifique du projet
+
+Le picker est intégré dans :
+- Page Tasks (`/app/projects/[projectId]/tasks`)
+- Page Epics (`/app/projects/[projectId]/epics`)
+- Page Overview (`/app/projects/[projectId]/overview`)
+
+#### Page Tasks
+
+- **Filtrage par sprint** : Les tâches sont filtrées selon le sprint sélectionné
+- **Création de tâche** : Le champ "Sprint" est pré-rempli avec le sprint sélectionné (si un sprint est sélectionné)
+- Les autres filtres (statut, type, epic) fonctionnent en combinaison avec le filtre sprint
+
+#### Page Epics
+
+- **Affichage des stats** : Affiche le nombre de tâches par epic dans le sprint sélectionné
+- Si un sprint est sélectionné : affiche "X / Y" (tâches dans le sprint / total)
+- Si "Tous les sprints" : affiche le total comme avant
+
+#### Page Overview
+
+- **Stats filtrées** : Les statistiques des tâches sont filtrées par le sprint sélectionné
+- Si un sprint est sélectionné : affiche les stats pour ce sprint uniquement
+- Si "Tous les sprints" : affiche les stats globales du projet
+
+### Migration SQL
+
+Exécuter la migration `supabase/migrations/005_create_sprints.sql` dans le SQL Editor de Supabase.
+
+Cette migration crée :
+- La table `sprints` avec RLS
+- La colonne `sprint_id` dans `tasks`
+- Les index pour les performances
+- Les triggers pour `updated_at`
+- Les politiques RLS complètes
+
+### Composants créés
+
+- `SprintProvider` / `useSprintContext` : Contexte pour gérer la sélection de sprint par projet
+- `SprintPicker` : Composant de sélection de sprint
+- `TasksPageClient` : Composant client pour la page Tasks avec filtrage sprint
+- `OverviewPageClient` : Composant client pour la page Overview avec stats filtrées
+
+### Helpers TypeScript
+
+- `src/lib/sprints.ts` : `getSprintsByProjectId`, `getActiveSprintByProjectId`, `getSprintById`
+
+### Limitations Step 4
+
+Cette version n'inclut **pas** :
+
+- Création/édition de sprints dans l'UI (seulement via SQL pour l'instant)
+- Time tracking par sprint
+- Rapports avancés par sprint
+- Portal views avec sprints (seulement Internal mode pour l'instant)
+- Validation DB pour "un seul sprint actif par projet" (géré en application)
+
+Ces fonctionnalités seront ajoutées dans les prochaines étapes.
+
+## Step 5 – Time tracking & Time ledger
+
+Step 5 implémente le suivi du temps et un registre de temps sur les projets et les tâches.
+
+### Migration SQL
+
+Exécuter la migration `supabase/migrations/006_create_time_entries.sql` :
+
+Cette migration crée :
+- La table `time_entries` avec RLS
+- Les index pour les performances
+- Les triggers pour `updated_at`
+- Les politiques RLS complètes
+
+### Modèle de données
+
+#### Table `time_entries`
+
+- `id` : UUID, PK
+- `project_id` : UUID, FK → `projects.id` (not null)
+- `task_id` : UUID, FK → `tasks.id` (nullable)
+- `user_id` : UUID, FK → `users.id` (not null)
+- `category` : TEXT (not null) - valeurs autorisées :
+  - `project_management` : Gestion de projet
+  - `development` : Développement
+  - `documentation` : Documentation
+  - `maintenance_evolution` : Maintenance & Évolution
+- `duration_minutes` : INTEGER (not null) - unité canonique = minutes
+- `date` : DATE (not null) - jour où le travail a été effectué
+- `notes` : TEXT (nullable) - description libre du travail
+- `created_at` : TIMESTAMPTZ
+- `updated_at` : TIMESTAMPTZ
+
+**Contrainte de cohérence** : Si `task_id` est défini, `tasks.project_id` doit être égal à `time_entries.project_id`. Cette contrainte est vérifiée au niveau application pour Step 5.
+
+### RLS (Row Level Security)
+
+Les politiques RLS permettent :
+
+1. **SELECT** : Tous les membres d'un projet peuvent voir toutes les entrées de temps de ce projet
+2. **INSERT** : Les utilisateurs peuvent créer leurs propres entrées pour les projets où ils ont un membership
+3. **UPDATE** : Les utilisateurs peuvent modifier leurs propres entrées, et les admins/participants peuvent modifier toutes les entrées du projet
+4. **DELETE** : Même logique que UPDATE
+
+### Vues UI
+
+#### 1. Vue globale "My time" – `/app/my-time`
+
+Affiche toutes les entrées de temps de l'utilisateur connecté avec :
+- Filtres : période (semaine en cours par défaut), projet, catégorie
+- Tableau avec colonnes : Date, Projet, Tâche, Catégorie, Durée, Notes
+- Résumés : temps total, répartition par projet, répartition par catégorie
+- Bouton "Log time" pour créer une nouvelle entrée
+
+#### 2. Vue projet Time – `/app/projects/[projectId]/time`
+
+Affiche toutes les entrées de temps du projet, **sprint-aware** :
+- Utilise le contexte Sprint pour filtrer les entrées liées aux tâches du sprint sélectionné
+- Filtres : sprint (via SprintPicker), utilisateur, catégorie
+- Tableau avec colonnes : Date, Utilisateur, Tâche, Catégorie, Durée, Notes
+- Résumés : temps total, répartition par utilisateur, répartition par catégorie
+- Bouton "Log time" pour créer une nouvelle entrée (pré-remplie avec le projet courant)
+
+### Intégration avec les Tâches
+
+#### Affichage du temps total
+
+- Dans la liste des tâches (`/app/projects/[projectId]/tasks`) :
+  - Colonne "Temps" affichant le temps total enregistré pour chaque tâche
+  - Badge avec icône horloge et durée formatée (ex: "3h 45m")
+  - Affiché uniquement si du temps a été enregistré
+
+#### Log time depuis une tâche
+
+- Dans le drawer de détail d'une tâche :
+  - Section "Temps enregistré" avec le total
+  - Bouton "Enregistrer du temps pour cette tâche"
+  - Modal de création d'entrée pré-remplie avec :
+    - Projet (courant)
+    - Tâche (courante)
+    - Date (aujourd'hui)
+
+### Helpers TypeScript
+
+- `src/lib/time-entries.ts` :
+  - `getTimeEntries()` : Récupère les entrées avec filtres
+  - `getTimeEntriesByTaskId()` : Récupère les entrées d'une tâche
+  - `getTotalTimeByTaskId()` : Calcule le temps total d'une tâche
+  - `getTimeStats()` : Statistiques agrégées pour un projet
+  - `formatDuration()` : Convertit minutes en format lisible
+
+### Actions serveur
+
+- `src/lib/actions/time-entries.ts` :
+  - `createTimeEntry()` : Crée une nouvelle entrée
+  - `updateTimeEntry()` : Met à jour une entrée
+  - `deleteTimeEntry()` : Supprime une entrée
+  - `getTotalTimeByTaskId()` : Récupère le temps total d'une tâche (action serveur)
+
+### Composants UI
+
+- `TimeEntryForm` : Formulaire de création/édition d'entrée de temps
+- `TaskTimeSection` : Section temps dans le drawer de tâche
+- `TaskTimeBadge` : Badge affichant le temps total d'une tâche
+- `MyTimePageClient` : Client pour la page "My time"
+- `ProjectTimePageClient` : Client pour la page Time du projet
+
+### Limitations Step 5
+
+Cette version n'inclut **pas** :
+
+- Facturation et tarifs horaires
+- Vues portal pour les clients
+- Rapports avancés (export CSV, PDF)
+- Notifications de temps enregistré
+- Validation côté DB pour la cohérence `task_id` / `project_id` (géré en application)
+
+Ces fonctionnalités seront ajoutées dans les prochaines étapes.
+
+## Prêt pour Step 6
+
+Step 5 implémente Time tracking & Time ledger. Les éléments suivants seront ajoutés dans les prochaines étapes :
+
+- UI de création/édition de sprints
 - Assignee selection dans l'UI
 - Portal views pour les clients (filtrage `is_client_visible`)
 - Subtasks
 - Tags
 - Comments
 - Documents
-- Sprints
-- Time tracking
+- Facturation et tarifs horaires
 - Invoices
 - Notifications

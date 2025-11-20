@@ -10,7 +10,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
+/**
+ * Creates a Supabase client for use in Server Components, Server Actions, and Route Handlers.
+ * This function MUST only be called from server-side code.
+ * 
+ * @throws {Error} If called from client-side code
+ */
 export const createSupabaseServerClient = async () => {
+  // Ensure this is only called on the server
+  if (typeof window !== 'undefined') {
+    throw new Error(
+      'createSupabaseServerClient can only be used in Server Components, Server Actions, or Route Handlers.'
+    )
+  }
+
   try {
     const cookieStore = await cookies()
 
