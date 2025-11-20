@@ -15,7 +15,7 @@
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 215.4 16.3% 38%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
@@ -24,6 +24,25 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+    
+    /* Couleurs sémantiques 2025 */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 98%;
+    
+    /* Durées d'animation standardisées */
+    --duration-instant: 100ms;
+    --duration-fast: 200ms;
+    --duration-base: 300ms;
+    --duration-slow: 500ms;
+    
+    /* Easing modernes */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out-expo: cubic-bezier(0.87, 0, 0.13, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     
     /* Tailles de police CommitMono selon le guide de style */
     --font-size-h1: 64px;
@@ -56,7 +75,7 @@
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted-foreground: 215 20.2% 75.1%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
@@ -64,6 +83,15 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    
+    /* Couleurs sémantiques dark mode */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 98%;
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -102,6 +130,40 @@
     margin: 0;
     padding: 0;
   }
+  
+  /* Respecter prefers-reduced-motion pour l'accessibilité */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  
+  /* Améliorer les focus states pour l'accessibilité */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: calc(var(--radius) + 1px);
+  }
+  
+  /* Focus states personnalisés pour les éléments interactifs */
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+  
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 }
 
 @layer utilities {
@@ -135,4 +197,53 @@
   .scrollbar-track-transparent::-webkit-scrollbar-track {
     background: transparent;
   }
+  
+  /* Animation shimmer optimisée - maintenant dans tailwind.config */
+  
+  /* Glassmorphism effect */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .dark .glass-effect {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Micro-interaction pour les inputs - optimisée pour GPU */
+  .input-modern {
+    transition: border-color var(--duration-base) var(--ease-out-expo),
+                box-shadow var(--duration-base) var(--ease-out-expo);
+    will-change: border-color, box-shadow;
+  }
+  
+  .input-modern:focus {
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2),
+                0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Optimiser les animations pour le GPU */
+  .animate-slide-in-right-spring,
+  .animate-slide-out-right-spring,
+  .animate-scale-in {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+  }
+  
+  /* Stagger animation utility */
+  .stagger-child > * {
+    animation: slide-up-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  
+  .stagger-child > *:nth-child(1) { animation-delay: 0.1s; }
+  .stagger-child > *:nth-child(2) { animation-delay: 0.2s; }
+  .stagger-child > *:nth-child(3) { animation-delay: 0.3s; }
+  .stagger-child > *:nth-child(4) { animation-delay: 0.4s; }
+  .stagger-child > *:nth-child(5) { animation-delay: 0.5s; }
+  .stagger-child > *:nth-child(6) { animation-delay: 0.6s; }
+  .stagger-child > *:nth-child(7) { animation-delay: 0.7s; }
+  .stagger-child > *:nth-child(8) { animation-delay: 0.8s; }
 }

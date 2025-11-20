@@ -359,11 +359,168 @@ Les layouts de projet (`/app/projects/[projectId]/layout.tsx` et `/portal/projec
 - La logique métier (tasks, epics, time entries, invoices, etc.) sera implémentée dans les prochaines étapes
 - Cette étape se concentre uniquement sur le shell, la navigation et les layouts
 
-## Prêt pour Step 3
+## Step 3 – Epics & Tasks (V1)
 
-Step 2 implémente le shell et la navigation. Les éléments suivants seront ajoutés dans les prochaines étapes :
+Step 3 implémente une couche minimale mais solide d'Epics et Tasks sur les projets, intégrée dans le shell existant.
 
-- Tasks, epics, sprints
+### Modèle de données
+
+Step 3 introduit trois nouvelles tables :
+
+#### 1. `epics`
+
+Table pour les épopées (groupes de tâches) :
+
+- `id` (UUID, PK)
+- `project_id` (UUID, FK vers `projects.id`)
+- `title` (text, not null)
+- `description` (text, nullable)
+- `status` (text, valeurs : `'open'`, `'in_progress'`, `'done'`, `'archived'`, default `'open'`)
+- `created_by` (UUID, FK vers `users.id`)
+- `created_at`, `updated_at` (timestamps)
+
+#### 2. `tasks`
+
+Table pour les tâches :
+
+- `id` (UUID, PK)
+- `project_id` (UUID, FK vers `projects.id`)
+- `epic_id` (UUID, nullable, FK vers `epics.id`)
+- `title` (text, not null)
+- `description` (text, nullable)
+- `type` (text, valeurs : `'bug'`, `'new_feature'`, `'improvement'`)
+- `status` (text, valeurs : `'todo'`, `'in_progress'`, `'blocked'`, `'waiting_for_client'`, `'done'`)
+- `priority` (text, valeurs : `'low'`, `'medium'`, `'high'`, `'urgent'`)
+- `estimate_bucket` (text, nullable, valeurs : `'XS'`, `'S'`, `'M'`, `'L'`, `'XL'`, `'XXL'`)
+  - Sémantique : XS = minutes, S = heure, M = demi-journée, L = jour, XL = jours, XXL = semaine+
+- `is_client_visible` (boolean, default `false`)
+- `created_by` (UUID, FK vers `users.id`)
+- `updated_by` (UUID, nullable, FK vers `users.id`)
+- `created_at`, `updated_at` (timestamps)
+
+#### 3. `task_assignees`
+
+Table de liaison many-to-many entre tâches et utilisateurs :
+
+- `task_id` (UUID, FK vers `tasks.id`)
+- `user_id` (UUID, FK vers `users.id`)
+- `assigned_at` (timestamptz, default now())
+- PRIMARY KEY (`task_id`, `user_id`)
+
+**Note** : La contrainte que les assignees doivent être membres du projet est gérée au niveau application pour Step 3 (pas encore de contrainte DB).
+
+### RLS (Row Level Security)
+
+Les politiques RLS sont configurées pour :
+
+1. **`epics`** :
+   - `SELECT` : Tous les membres du projet peuvent voir les epics
+   - `INSERT`, `UPDATE`, `DELETE` : Seulement les rôles internes (`project_admin`, `project_participant`)
+
+2. **`tasks`** :
+   - `SELECT` : Tous les membres du projet peuvent voir les tâches
+   - `INSERT`, `UPDATE`, `DELETE` : Seulement les rôles internes (`project_admin`, `project_participant`)
+
+3. **`task_assignees`** :
+   - `SELECT` : Les utilisateurs peuvent voir les assignees des tâches qu'ils peuvent voir
+   - `INSERT`, `DELETE` : Seulement les rôles internes sur le projet correspondant
+
+### Fonctionnalités UI
+
+#### Page Tasks (`/app/projects/[projectId]/tasks`)
+
+- **Liste des tâches** : Tableau avec colonnes :
+  - Titre
+  - Statut (badge coloré)
+  - Type (bug/new_feature/improvement)
+  - Priorité (badge coloré)
+  - Epic (si associée)
+  - Estimation (bucket)
+  - Visible client (icône)
+  - Date de création
+
+- **Filtres** :
+  - Recherche textuelle (titre et description)
+  - Filtre par statut (multi-sélection)
+  - Filtre par type (multi-sélection)
+  - Filtre par epic (dropdown)
+
+- **Création/Édition** :
+  - Dialog modal avec formulaire complet
+  - Tous les champs éditables
+  - Validation côté serveur
+
+#### Page Epics (`/app/projects/[projectId]/epics`)
+
+- **Liste des epics** : Tableau avec colonnes :
+  - Titre
+  - Statut (badge coloré)
+  - Nombre de tâches associées
+  - Date de création
+
+- **Création/Édition** :
+  - Dialog modal avec formulaire
+  - Champs : titre, description, statut
+
+#### Page Overview (`/app/projects/[projectId]/overview`)
+
+- **Statistiques** :
+  - Nombre total de tâches
+  - Nombre de tâches ouvertes
+  - Nombre total d'epics
+  - Liens vers les pages Tasks et Epics
+
+### Migration SQL
+
+Exécuter la migration `supabase/migrations/004_create_epics_tasks.sql` dans le SQL Editor de Supabase.
+
+Cette migration crée :
+- Les tables `epics`, `tasks`, `task_assignees`
+- Les index pour les performances
+- Les triggers pour `updated_at`
+- Les politiques RLS complètes
+
+### Limitations Step 3
+
+Cette version V1 est **minimale** et n'inclut **pas** :
+
+- Subtasks (sous-tâches)
+- Tags
+- Comments (commentaires)
+- Documents (pièces jointes)
+- Sprints et sprint picker
+- Time tracking (suivi du temps)
+- Invoices (factures)
+- Notifications
+- Assignee selection dans l'UI (le schéma supporte `task_assignees` mais l'UI n'est pas encore implémentée)
+- Portal views (vues client) - seulement Internal mode pour l'instant
+
+Ces fonctionnalités seront ajoutées dans les prochaines étapes.
+
+### Composants créés
+
+- `TasksList` : Liste des tâches avec filtres
+- `TaskForm` : Formulaire de création/édition de tâche
+- `EpicsList` : Liste des epics
+- `EpicForm` : Formulaire de création/édition d'epic
+- Server actions : `createTask`, `updateTask`, `deleteTask`, `createEpic`, `updateEpic`, `deleteEpic`
+
+### Helpers TypeScript
+
+- `src/lib/tasks.ts` : `getTasksByProjectId`, `getTaskById`, `getTaskStats`
+- `src/lib/epics.ts` : `getEpicsByProjectId`, `getEpicById`
+
+## Prêt pour Step 4
+
+Step 3 implémente Epics & Tasks V1. Les éléments suivants seront ajoutés dans les prochaines étapes :
+
+- Assignee selection dans l'UI
+- Portal views pour les clients (filtrage `is_client_visible`)
+- Subtasks
+- Tags
+- Comments
+- Documents
+- Sprints
 - Time tracking
 - Invoices
-- Comments et notifications
+- Notifications

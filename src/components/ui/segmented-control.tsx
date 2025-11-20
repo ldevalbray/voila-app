@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 
 interface SegmentedControlOption {
   value: string
-  label: string
+  label: string | React.ReactNode
   disabled?: boolean
 }
 
