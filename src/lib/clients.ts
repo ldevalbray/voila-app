@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from './supabase-server'
+import { createSupabaseBrowserClient } from './supabase-client'
 
 export interface Client {
   id: string
@@ -8,7 +9,7 @@ export interface Client {
 }
 
 /**
- * Récupère tous les clients accessibles par l'utilisateur
+ * Récupère tous les clients accessibles par l'utilisateur (serveur)
  * (basé sur les politiques RLS : clients des projets accessibles)
  */
 export async function getAllClients(): Promise<Client[]> {
@@ -35,6 +36,38 @@ export async function getAllClients(): Promise<Client[]> {
     return clients || []
   } catch (error) {
     console.error('Unexpected error in getAllClients:', error)
+    return []
+  }
+}
+
+/**
+ * Récupère tous les clients accessibles par l'utilisateur (client)
+ * Pour utilisation dans les composants client
+ */
+export async function getAllClientsClient(): Promise<Client[]> {
+  try {
+    const supabase = createSupabaseBrowserClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session?.user) {
+      return []
+    }
+
+    const { data: clients, error } = await supabase
+      .from('clients')
+      .select('*')
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching clients:', error)
+      return []
+    }
+
+    return clients || []
+  } catch (error) {
+    console.error('Unexpected error in getAllClientsClient:', error)
     return []
   }
 }

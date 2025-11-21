@@ -303,3 +303,34 @@ export async function getProjectById(
   }
 }
 
+/**
+ * Vérifie si l'utilisateur actuel est admin d'un projet
+ * @param projectId ID du projet
+ * @returns true si l'utilisateur est project_admin, false sinon
+ */
+export async function isProjectAdmin(projectId: string): Promise<boolean> {
+  try {
+    const supabase = await createSupabaseServerClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session?.user) {
+      return false
+    }
+
+    const { data, error } = await supabase
+      .from('project_memberships')
+      .select('role')
+      .eq('project_id', projectId)
+      .eq('user_id', session.user.id)
+      .eq('role', 'project_admin')
+      .single()
+
+    return !error && !!data
+  } catch (error) {
+    console.error('Unexpected error in isProjectAdmin:', error)
+    return false
+  }
+}
+

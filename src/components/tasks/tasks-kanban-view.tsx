@@ -22,6 +22,8 @@ interface TasksKanbanViewProps {
     open_count: number
   }
   onTaskClick: (task: Task) => void
+  selectedSprintId?: string | null
+  onTaskMoveToSprint?: (taskId: string, sprintId: string | null, status: TaskStatus) => void
 }
 
 type TaskStatus = 'todo' | 'in_progress' | 'blocked' | 'waiting_for_client' | 'done'
@@ -32,6 +34,8 @@ export function TasksKanbanView({
   epics,
   stats,
   onTaskClick,
+  selectedSprintId,
+  onTaskMoveToSprint,
 }: TasksKanbanViewProps) {
   const t = useTranslations('projects')
   const router = useRouter()
@@ -118,6 +122,7 @@ export function TasksKanbanView({
     setDraggedTask(taskId)
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', taskId)
+    e.dataTransfer.setData('source', 'kanban')
     // Optionnel: ajouter un style visuel
     if (e.currentTarget instanceof HTMLElement) {
       e.currentTarget.style.opacity = '0.5'
@@ -147,9 +152,30 @@ export function TasksKanbanView({
     setDragOverColumn(null)
 
     const taskId = e.dataTransfer.getData('text/plain')
-    if (!taskId || !draggedTask) return
+    const source = e.dataTransfer.getData('source') // 'backlog' ou 'kanban'
+    
+    if (!taskId) return
 
+    // Si la tâche vient du backlog, on doit la récupérer depuis l'API
+    // ou la passer depuis le parent
     const task = tasks.find((t) => t.id === taskId)
+    
+    // Si la tâche vient du backlog (source === 'backlog'), on doit:
+    // 1. Mettre à jour sprint_id (sera géré par le parent via onTaskMoveToSprint)
+    // 2. Mettre à jour le statut
+    if (source === 'backlog') {
+      // La tâche vient du backlog, on doit mettre à jour sprint_id et status
+      if (onTaskMoveToSprint && selectedSprintId) {
+        onTaskMoveToSprint(taskId, selectedSprintId, newStatus)
+      } else if (onTaskMoveToSprint && selectedSprintId === null) {
+        // "Tous les sprints" sélectionné - on ne peut pas déplacer depuis backlog
+        showToast.error(t('cannotMoveToAllSprints') || 'Impossible de déplacer vers "Tous les sprints"')
+      }
+      setDraggedTask(null)
+      return
+    }
+
+    // Tâche existante dans le sprint: mise à jour du statut uniquement
     if (!task || task.status === newStatus) {
       setDraggedTask(null)
       return
@@ -198,7 +224,8 @@ export function TasksKanbanView({
               'rounded-lg border bg-card transition-all duration-200',
               'h-[calc(100vh-280px)] max-h-[800px]',
               'sm:min-w-[240px] sm:max-w-[280px]',
-              isDragOver && 'ring-2 ring-primary ring-offset-2 scale-[1.02]'
+              // Feedback visuel DnD: highlight la colonne quand on drag depuis backlog ou sprint
+              isDragOver && 'ring-2 ring-primary ring-offset-2 scale-[1.02] bg-primary/5'
             )}
             onDragOver={(e) => handleDragOver(e, column.id)}
             onDragLeave={handleDragLeave}

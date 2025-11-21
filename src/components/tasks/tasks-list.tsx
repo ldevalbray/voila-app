@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { Task } from '@/lib/tasks'
 import { Epic } from '@/lib/epics'
 import {
@@ -28,7 +28,7 @@ import { SegmentedControl } from '@/components/ui/segmented-control'
 import { PageToolbar } from '@/components/layout/page-toolbar'
 import { Plus, Eye, EyeOff, X, Table2, LayoutGrid, ChevronDown, Search, CheckSquare, Filter, Tag, FolderKanban } from 'lucide-react'
 import { TaskForm } from './task-form'
-import { TasksKanbanView } from './tasks-kanban-view'
+import { TasksSplitLayout } from './tasks-split-layout'
 import { TaskDrawer } from './task-drawer'
 import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -122,6 +122,8 @@ export function TasksList({
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  // Ref pour partager le callback onTaskUpdated entre TasksSplitLayout et TaskDrawer
+  const onTaskUpdatedRef = useRef<(() => void) | null>(null)
   const [searchQuery, setSearchQuery] = useState(initialFilters?.search || '')
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string[]>(
@@ -434,250 +436,134 @@ export function TasksList({
     />
   )
 
+  // État pour gérer l'ouverture/fermeture du backlog
+  const [isBacklogOpen, setIsBacklogOpen] = useState(false)
+
+  // Charger l'état depuis localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(`backlog_open_${projectId}`)
+      if (stored !== null) {
+        setIsBacklogOpen(stored === 'true')
+      }
+    }
+  }, [projectId])
+
+  // Sauvegarder l'état dans localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`backlog_open_${projectId}`, String(isBacklogOpen))
+    }
+  }, [isBacklogOpen, projectId])
+
   return (
     <div className="space-y-3">
       {/* Barre d'outils avec PageToolbar */}
       <PageToolbar
-        search={{
-          placeholder: t('searchTasks'),
-          value: searchQuery,
-          onChange: handleSearch,
-          onClear: () => {
-            setSearchQuery('')
-            updateFilters({ search: undefined })
-          },
-          expanded: isSearchExpanded,
-          onExpandedChange: setIsSearchExpanded,
-        }}
-        filters={filterComponents}
-        viewSwitcher={viewSwitcher}
-        actions={
-          <Button onClick={() => setIsCreateDialogOpen(true)} size="sm" className="flex-shrink-0">
-            <Plus className="mr-2 h-4 w-4" />
-            {t('newTask')}
-          </Button>
-        }
+          search={{
+            placeholder: t('searchTasks'),
+            value: searchQuery,
+            onChange: handleSearch,
+            onClear: () => {
+              setSearchQuery('')
+              updateFilters({ search: undefined })
+            },
+            expanded: isSearchExpanded,
+            onExpandedChange: setIsSearchExpanded,
+          }}
+          filters={filterComponents}
+          viewSwitcher={viewSwitcher}
+          actions={
+            <Button onClick={() => setIsCreateDialogOpen(true)} size="sm" className="flex-shrink-0">
+              <Plus className="mr-2 h-4 w-4" />
+              {t('newTask')}
+            </Button>
+          }
       />
 
       {/* Filtres actifs - ligne séparée si actifs (optionnel et compact) */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-border/50">
           {searchQuery && (
-            <Badge
-              variant="secondary"
-              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
-              onClick={() => {
-                setSearchQuery('')
-                updateFilters({ search: undefined })
-              }}
-            >
-              <Search className="h-3 w-3" />
-              <span>{searchQuery}</span>
-              <X className="h-3 w-3 transition-transform hover:rotate-90" />
-            </Badge>
-          )}
-          {statusFilter.map((status) => (
-            <Badge
-              key={status}
-              variant="secondary"
-              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
-              onClick={() => handleStatusFilter(status)}
-            >
-              <span>{getTaskStatusLabel(status)}</span>
-              <X className="h-3 w-3 transition-transform hover:rotate-90" />
-            </Badge>
-          ))}
-          {typeFilter.map((type) => (
-            <Badge
-              key={type}
-              variant="secondary"
-              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
-              onClick={() => handleTypeFilter(type)}
-            >
-              <span>{getTaskTypeLabel(type)}</span>
-              <X className="h-3 w-3 transition-transform hover:rotate-90" />
-            </Badge>
+              <Badge
+                variant="secondary"
+                className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
+                onClick={() => {
+                  setSearchQuery('')
+                  updateFilters({ search: undefined })
+                }}
+              >
+                <Search className="h-3 w-3" />
+                <span>{searchQuery}</span>
+                <X className="h-3 w-3 transition-transform hover:rotate-90" />
+              </Badge>
+            )}
+            {statusFilter.map((status) => (
+              <Badge
+                key={status}
+                variant="secondary"
+                className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
+                onClick={() => handleStatusFilter(status)}
+              >
+                <span>{getTaskStatusLabel(status)}</span>
+                <X className="h-3 w-3 transition-transform hover:rotate-90" />
+              </Badge>
+            ))}
+            {typeFilter.map((type) => (
+              <Badge
+                key={type}
+                variant="secondary"
+                className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
+                onClick={() => handleTypeFilter(type)}
+              >
+                <span>{getTaskTypeLabel(type)}</span>
+                <X className="h-3 w-3 transition-transform hover:rotate-90" />
+              </Badge>
           ))}
           {epicFilter !== 'all' && (
-            <Badge
-              variant="secondary"
-              className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
-              onClick={() => handleEpicFilter('all')}
-            >
-              <span>{getEpicLabel(epicFilter)}</span>
-              <X className="h-3 w-3 transition-transform hover:rotate-90" />
-            </Badge>
+              <Badge
+                variant="secondary"
+                className="flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-secondary/80 transition-all duration-200 ease-out text-caption h-6"
+                onClick={() => handleEpicFilter('all')}
+              >
+                <span>{getEpicLabel(epicFilter)}</span>
+                <X className="h-3 w-3 transition-transform hover:rotate-90" />
+              </Badge>
           )}
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleResetFilters}
-            className="h-6 text-caption ml-auto"
+              variant="ghost"
+              size="sm"
+              onClick={handleResetFilters}
+              className="h-6 text-caption ml-auto"
           >
             {t('resetFilters')}
           </Button>
         </div>
       )}
 
-      {/* Liste des tâches - Table ou Kanban selon la vue */}
-      {view === 'kanban' ? (
-        <div className="space-y-4">
-          <TasksKanbanView
-            projectId={projectId}
-            tasks={tasks}
-            epics={epics}
-            stats={stats}
-            onTaskClick={setEditingTask}
-          />
-        </div>
-      ) : (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>{t('tasksList')}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {tasks.length === 0 ? (
-              <EmptyState
-                icon={CheckSquare}
-                title={hasActiveFilters ? t('noTasksFound') : t('noTasks')}
-                description={
-                  hasActiveFilters
-                    ? t('noTasksFoundDescription') || t('noTasksFound')
-                    : t('noTasksDescription') || t('createFirstTaskDescription')
-                }
-                action={
-                  !hasActiveFilters && (
-                    <Button onClick={() => setIsCreateDialogOpen(true)}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      {t('createFirstTask') || t('newTask')}
-                    </Button>
-                  )
-                }
-              />
-            ) : (
-              <div 
-                className="overflow-x-auto scrollbar-thin h-[calc(100vh-280px)] max-h-[800px] overflow-y-auto" 
-                role="region" 
-                aria-label={t('tasksList')}
-              >
-                <div className="min-w-full inline-block align-middle">
-                  <Table role="table" aria-label={t('tasksTable')}>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[300px]">{t('taskTitle')}</TableHead>
-                      <TableHead>{t('status')}</TableHead>
-                      <TableHead>{t('type')}</TableHead>
-                      <TableHead>{t('priority')}</TableHead>
-                      <TableHead>{t('epic')}</TableHead>
-                      <TableHead>{t('estimate')}</TableHead>
-                      <TableHead className="w-[100px]">{t('time')}</TableHead>
-                      <TableHead className="w-[80px]">{t('clientVisible')}</TableHead>
-                      <TableHead className="w-[100px]">{t('createdAt')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {tasks.map((task) => (
-                      <TableRow
-                        key={task.id}
-                        className="cursor-pointer transition-colors hover:bg-accent/50 group"
-                        onClick={() => setEditingTask(task)}
-                        role="row"
-                        tabIndex={0}
-                        aria-label={`${task.title} - ${getTaskStatusLabel(task.status)}`}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            setEditingTask(task)
-                          }
-                        }}
-                      >
-                        <TableCell className="font-medium">
-                          <div className="flex items-start gap-2">
-                            <div className="flex-1 min-w-0">
-                              <span className="line-clamp-1 block">{task.title}</span>
-                              <div className="flex items-center gap-2 mt-1 sm:hidden">
-                                <Badge 
-                                  variant={getStatusBadgeVariant(task.status)}
-                                  className="text-caption"
-                                >
-                                  {getTaskStatusLabel(task.status)}
-                                </Badge>
-                                <Badge variant="outline" className="text-xs">
-                                  {getTaskTypeLabel(task.type)}
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="hidden sm:flex">
-                              <TaskTimeBadge taskId={task.id} />
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge 
-                            variant={getStatusBadgeVariant(task.status)}
-                            className="text-caption"
-                          >
-                            {getTaskStatusLabel(task.status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <Badge variant="outline" className="text-xs">
-                            {getTaskTypeLabel(task.type)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          <Badge 
-                            variant={getPriorityBadgeVariant(task.priority)}
-                            className="text-caption"
-                          >
-                            {getTaskPriorityLabel(task.priority)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {task.epic ? (
-                            <Badge variant="secondary" className="text-xs max-w-[150px] truncate">
-                              {task.epic.title}
-                            </Badge>
-                          ) : (
-                            <span className="text-muted-foreground text-caption">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell">
-                          {task.estimate_bucket ? (
-                            <Badge variant="outline" className="text-xs">
-                              {task.estimate_bucket}
-                            </Badge>
-                          ) : (
-                            <span className="text-muted-foreground text-caption">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <TaskTimeBadge taskId={task.id} />
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {task.is_client_visible ? (
-                            <Eye className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" aria-label={t('visibleToClient')} />
-                          ) : (
-                            <EyeOff className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" aria-label={t('notVisibleToClient')} />
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell text-caption text-muted-foreground">
-                          {new Date(task.created_at).toLocaleDateString('fr-FR', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                          })}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {/* Layout à deux colonnes: Backlog (gauche) + Sprint Tasks (droite) */}
+      <div className="flex-1 min-h-0">
+        <TasksSplitLayout
+          projectId={projectId}
+          sprintTasks={tasks}
+          epics={epics}
+          stats={stats}
+          viewMode={view}
+          onTaskClick={setEditingTask}
+          hasActiveFilters={hasActiveFilters}
+          onCreateTask={() => setIsCreateDialogOpen(true)}
+          isBacklogOpen={isBacklogOpen}
+          onBacklogToggle={() => setIsBacklogOpen(!isBacklogOpen)}
+          onTaskCreated={() => {
+            // Ce callback sera appelé après création de tâche
+            // Le rafraîchissement se fait via router.refresh() dans onSuccess
+          }}
+          onTaskUpdated={(callback) => {
+            // Stocker le callback dans le ref pour qu'il soit accessible depuis TaskDrawer
+            onTaskUpdatedRef.current = callback
+          }}
+        />
+      </div>
 
       {/* Dialog de création */}
       <TaskForm
@@ -688,6 +574,7 @@ export function TasksList({
         onSuccess={() => {
           setIsCreateDialogOpen(false)
           router.refresh()
+          // Le backlog se rafraîchira automatiquement via l'effet focus
         }}
       />
 
@@ -698,6 +585,10 @@ export function TasksList({
         open={!!editingTask}
         onOpenChange={(open) => {
           if (!open) setEditingTask(null)
+        }}
+        onTaskUpdated={() => {
+          // Appeler le callback stocké dans le ref pour rafraîchir le backlog
+          onTaskUpdatedRef.current?.()
         }}
       />
     </div>

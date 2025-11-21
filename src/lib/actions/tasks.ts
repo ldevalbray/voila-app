@@ -270,3 +270,19 @@ export async function deleteTask(taskId: string) {
   }
 }
 
+/**
+ * Récupère les tâches du backlog pour un projet (action serveur)
+ * Backlog = tâches avec sprint_id IS NULL et status != 'done'
+ */
+export async function getBacklogTasksAction(projectId: string) {
+  try {
+    const { getBacklogTasks } = await import('@/lib/tasks')
+    const tasks = await getBacklogTasks(projectId)
+    return { data: tasks, error: null }
+  } catch (error) {
+    const t = await getTranslations('common')
+    console.error('Error in getBacklogTasksAction:', error)
+    return { data: [], error: t('error') }
+  }
+}
+

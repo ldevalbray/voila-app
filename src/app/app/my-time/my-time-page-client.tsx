@@ -172,6 +172,24 @@ export function MyTimePageClient({
     setTimeout(updateFilters, 0)
   }
 
+  const getProjectFilterLabel = () => {
+    if (selectedProjects.length === 0) {
+      return t('project') || 'Projet'
+    }
+    const selectedProject = projects.find((p) => p.id === selectedProjects[0])
+    return selectedProject?.name || t('project') || 'Projet'
+  }
+
+  const getCategoryFilterLabel = () => {
+    if (selectedCategories.length === 0) {
+      return t('category') || 'Catégorie'
+    }
+    if (selectedCategories.length === 1) {
+      return categoryLabels[selectedCategories[0]] || selectedCategories[0]
+    }
+    return `${selectedCategories.length} ${t('categories') || 'catégories'}`
+  }
+
   const filterComponents = [
     <Popover key="dateRange">
       <PopoverTrigger asChild>

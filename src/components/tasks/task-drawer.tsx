@@ -32,6 +32,7 @@ interface TaskDrawerProps {
   epics: Epic[]
   open: boolean
   onOpenChange: (open: boolean) => void
+  onTaskUpdated?: () => void // Callback appelé après une mise à jour de tâche
 }
 
 export function TaskDrawer({
@@ -39,6 +40,7 @@ export function TaskDrawer({
   epics,
   open,
   onOpenChange,
+  onTaskUpdated,
 }: TaskDrawerProps) {
   const t = useTranslations('projects')
   const tCommon = useTranslations('common')
@@ -94,11 +96,13 @@ export function TaskDrawer({
       if (!result.error) {
         setLastSaved(new Date())
         router.refresh()
+        // Appeler le callback pour notifier les composants parents (ex: rafraîchir le backlog)
+        onTaskUpdated?.()
       }
 
       setIsSaving(false)
     },
-    [task, router]
+    [task, router, onTaskUpdated]
   )
 
   // Auto-save avec debounce

@@ -37,3 +37,4 @@ next-env.d.ts
 
 # Note: Les hooks Git dans .git/hooks/ ne sont pas versionnés par défaut
 # Ils sont installés via scripts/install-hooks.sh
+.env.local

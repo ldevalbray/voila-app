@@ -368,3 +368,88 @@ export async function getTaskStats(
   }
 }
 
+/**
+ * Récupère les tâches du backlog pour un projet
+ * Backlog = tâches avec sprint_id IS NULL et status != 'done'
+ * @param projectId ID du projet
+ * @returns Liste des tâches du backlog
+ */
+export async function getBacklogTasks(projectId: string): Promise<Task[]> {
+  try {
+    const supabase = await createSupabaseServerClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session?.user) {
+      return []
+    }
+
+    // Récupérer les tâches du backlog
+    // sprint_id IS NULL et status != 'done'
+    const { data: tasks, error } = await supabase
+      .from('tasks')
+      .select(
+        `
+        *,
+        epic:epics(id, title)
+      `
+      )
+      .eq('project_id', projectId)
+      .is('sprint_id', null)
+      .neq('status', 'done')
+      // Tri: priority desc (urgent en premier), puis created_at asc
+      .order('priority', { ascending: false })
+      .order('created_at', { ascending: true })
+    
+    console.log('[getBacklogTasks] Found tasks:', tasks?.length || 0, 'for project:', projectId)
+
+    if (error) {
+      console.error('Error fetching backlog tasks:', error)
+      return []
+    }
+
+    if (!tasks || tasks.length === 0) {
+      return []
+    }
+
+    // Récupérer les assignees pour chaque tâche
+    const taskIds = tasks.map((t) => t.id)
+    const { data: assignees, error: assigneesError } = await supabase
+      .from('task_assignees')
+      .select(
+        `
+        task_id,
+        user:users(id, email, first_name, last_name)
+      `
+      )
+      .in('task_id', taskIds)
+
+    if (assigneesError) {
+      console.error('Error fetching assignees:', assigneesError)
+    }
+
+    // Grouper les assignees par tâche
+    const assigneesMap = new Map<string, Task['assignees']>()
+    if (assignees) {
+      assignees.forEach((assignment: any) => {
+        if (!assigneesMap.has(assignment.task_id)) {
+          assigneesMap.set(assignment.task_id, [])
+        }
+        if (assignment.user) {
+          assigneesMap.get(assignment.task_id)?.push(assignment.user)
+        }
+      })
+    }
+
+    return tasks.map((task) => ({
+      ...task,
+      assignees: assigneesMap.get(task.id) || [],
+      assignees_count: assigneesMap.get(task.id)?.length || 0,
+    }))
+  } catch (error) {
+    console.error('Unexpected error in getBacklogTasks:', error)
+    return []
+  }
+}
+

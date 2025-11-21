@@ -48,15 +48,25 @@ export function TasksPageClient({
     const loadTasks = async () => {
       setIsLoading(true)
       try {
-        // Utiliser fetch pour appeler l'API route ou recharger la page
-        // Pour l'instant, on filtre côté client
+        // Filtrer les tâches selon le sprint sélectionné
+        // IMPORTANT: Exclure les tâches sans sprint (backlog) du Kanban/Table
+        // Les tâches sans sprint sont gérées par BacklogPanel séparément
         const filteredTasks = initialTasks.filter((task) => {
+          // Toujours exclure les tâches sans sprint (backlog) du sprint view
+          // Ces tâches sont affichées dans le BacklogPanel
+          if (!task.sprint_id) {
+            return false
+          }
+          
           if (selectedSprintId === null) {
-            // "Tous les sprints" - pas de filtre
+            // "Tous les sprints" - afficher toutes les tâches avec un sprint
             return true
           }
+          
+          // Sprint spécifique sélectionné - afficher seulement les tâches de ce sprint
           return task.sprint_id === selectedSprintId
         })
+        console.log('[TasksPageClient] Filtered tasks:', filteredTasks.length, 'from', initialTasks.length, 'initial tasks')
         setTasks(filteredTasks)
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Erreur lors du chargement des tâches'
