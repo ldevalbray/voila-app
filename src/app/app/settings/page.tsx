@@ -5,7 +5,7 @@ export default async function SettingsPage() {
   const t = await getTranslations('settings')
   
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8">
+    <div className="mx-auto max-w-7xl pt-8 px-8">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold text-slate-900">{t('title')}</h1>
         <p className="mt-2 text-base text-slate-600">

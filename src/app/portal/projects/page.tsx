@@ -32,11 +32,8 @@ export default async function PortalProjectsPage() {
   const t = await getTranslations('projects')
 
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={t('title')}
-        description={t('description')}
-      />
+    <div className="flex-1 pt-8 px-8">
+      <PageToolbar />
 
       {/* Projects Table */}
       {projects.length === 0 ? (

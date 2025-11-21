@@ -5,9 +5,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { FolderKanban, Clock } from 'lucide-react'
+import { FolderKanban, Clock, UserPlus } from 'lucide-react'
 import { PageToolbar } from '@/components/layout/page-toolbar'
 import { getTranslations } from 'next-intl/server'
+import { getClientProjects } from '@/lib/projects'
+import { EmptyState } from '@/components/layout/empty-state'
 
 /**
  * Page d'accueil client (Client mode)
@@ -15,13 +17,39 @@ import { getTranslations } from 'next-intl/server'
  */
 export default async function PortalHomePage() {
   const t = await getTranslations('home')
+  const tProjects = await getTranslations('projects')
+  
+  // Récupérer les projets clients
+  let projects: any[] = []
+  try {
+    const result = await getClientProjects()
+    projects = result.data
+  } catch (error) {
+    console.error('Error fetching client projects:', error)
+    projects = []
+  }
+
+  // Si aucun projet n'est disponible, afficher un écran de bienvenue
+  if (projects.length === 0) {
+    return (
+      <div className="flex-1 pt-8 px-8">
+        <PageToolbar />
+        <Card className="border-border/50">
+          <CardContent>
+            <EmptyState
+              icon={UserPlus}
+              title={tProjects('noProjectsAssigned')}
+              description={t('noFreelanceInvitation')}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
   
   return (
-    <div className="flex-1 space-y-8 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={t('title')}
-        description={t('descriptionPortal')}
-      />
+    <div className="flex-1 pt-8 px-8">
+      <PageToolbar />
 
       {/* Main Content Sections */}
       <div className="grid gap-6 md:grid-cols-2">

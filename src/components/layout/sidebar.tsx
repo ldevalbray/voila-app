@@ -6,6 +6,7 @@ import { GlobalProjectSwitch } from './global-project-switch'
 import { ProjectSelector } from './project-selector'
 import { NavItem } from './nav-item'
 import { SidebarSection } from './sidebar-section'
+import { AnimatedSidebarMenu } from './animated-sidebar-menu'
 import { useLastProjectId } from '@/hooks/use-last-project-id'
 import { useProjectContext } from './project-context'
 import { useEffect } from 'react'
@@ -14,7 +15,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
-  SidebarMenu,
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { useTranslations } from 'next-intl'
@@ -81,7 +81,7 @@ export function AppSidebar({ mode, projects, currentProject: currentProjectProp 
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border/50 px-4 py-4 bg-sidebar/50 backdrop-blur-sm group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-4">
+      <SidebarHeader className="border-b border-sidebar-border/50 px-8 py-8 bg-sidebar/50 backdrop-blur-sm group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-4">
         {/* Switch Global/Project */}
         <GlobalProjectSwitch basePath={basePath} projects={projects} />
       </SidebarHeader>
@@ -90,7 +90,7 @@ export function AppSidebar({ mode, projects, currentProject: currentProjectProp 
         {/* Section Global */}
         {!isProjectMode && (
           <SidebarSection>
-            <SidebarMenu className="space-y-0.5 group-data-[collapsible=icon]:space-y-2">
+            <AnimatedSidebarMenu className="space-y-0.5 group-data-[collapsible=icon]:space-y-2">
               {globalNav.map((item) => (
                 <NavItem
                   key={item.href}
@@ -100,7 +100,7 @@ export function AppSidebar({ mode, projects, currentProject: currentProjectProp 
                   icon={item.icon}
                 />
               ))}
-            </SidebarMenu>
+            </AnimatedSidebarMenu>
           </SidebarSection>
         )}
 
@@ -118,7 +118,7 @@ export function AppSidebar({ mode, projects, currentProject: currentProjectProp 
             
             {currentProject ? (
               <SidebarSection>
-                <SidebarMenu className="space-y-0.5 group-data-[collapsible=icon]:space-y-2">
+                <AnimatedSidebarMenu className="space-y-0.5 group-data-[collapsible=icon]:space-y-2">
                   {projectNav.map((item) => (
                     <NavItem
                       key={item.href}
@@ -127,7 +127,7 @@ export function AppSidebar({ mode, projects, currentProject: currentProjectProp 
                       icon={item.icon}
                     />
                   ))}
-                </SidebarMenu>
+                </AnimatedSidebarMenu>
               </SidebarSection>
             ) : (
               <div className="mt-2 rounded-lg border border-sidebar-border/50 bg-sidebar-accent/30 p-4 text-sm text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">

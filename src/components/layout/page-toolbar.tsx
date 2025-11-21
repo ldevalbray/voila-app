@@ -1,12 +1,12 @@
 'use client'
 
-import { ReactNode, useState, useRef, useEffect } from 'react'
+import { ReactNode, useState, useRef, useEffect, cloneElement, isValidElement } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
-import { Breadcrumbs, type BreadcrumbItem } from '@/components/ui/breadcrumbs'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 interface SearchConfig {
   placeholder?: string
@@ -20,12 +20,16 @@ interface SearchConfig {
 interface PageToolbarProps {
   title?: string | ReactNode
   description?: string | ReactNode
-  breadcrumbs?: BreadcrumbItem[]
   search?: SearchConfig
   filters?: ReactNode[] // Array de composants de filtres
   viewSwitcher?: ReactNode // Composant SegmentedControl ou autre
   actions?: ReactNode
   className?: string
+  /**
+   * Mode compact : force l'affichage en icônes
+   * Si non défini, le mode compact est activé automatiquement si il y a plus de 2 filtres
+   */
+  compact?: boolean
 }
 
 /**
@@ -36,16 +40,21 @@ interface PageToolbarProps {
 export function PageToolbar({
   title,
   description,
-  breadcrumbs,
   search,
   filters = [],
   viewSwitcher,
   actions,
   className,
+  compact: compactProp,
 }: PageToolbarProps) {
   const t = useTranslations('ui')
   const [internalSearchExpanded, setInternalSearchExpanded] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  
+  // Utiliser le prop compact si fourni, sinon activer automatiquement si plus de 2 filtres
+  const isCompact = compactProp !== undefined 
+    ? compactProp 
+    : filters.length > 2
   
   // Utiliser l'état externe si fourni, sinon utiliser l'état interne
   const isSearchExpanded = search?.expanded !== undefined ? search.expanded : internalSearchExpanded
@@ -64,33 +73,28 @@ export function PageToolbar({
   const showActionsInTitle = title && actions && !hasToolbarControls
 
   return (
-    <div className={cn('space-y-3', className)}>
-      {/* Breadcrumbs */}
-      {breadcrumbs && breadcrumbs.length > 0 && (
-        <div className="pt-4">
-          <Breadcrumbs items={breadcrumbs} />
-        </div>
-      )}
-      
-      {/* Titre et description (optionnel) */}
-      {(title || description) && (
-        <div className="flex items-baseline justify-between gap-4 pt-4">
-          <div className="space-y-2 flex-1 min-w-0">
-            {title && <h1 className="text-h1">{title}</h1>}
-            {description && (
-              <p className="text-body text-muted-foreground">{description}</p>
+    <TooltipProvider delayDuration={0}>
+      <div className={cn('m-0 p-0', className)}>
+        {/* Titre et description (optionnel) */}
+        {(title || description) && (
+          <div className="flex items-baseline justify-between gap-4">
+            <div className="space-y-2 flex-1 min-w-0">
+              {title && <h1 className="text-h1">{title}</h1>}
+              {description && (
+                <p className="text-body text-muted-foreground">{description}</p>
+              )}
+            </div>
+            {/* Actions alignées à droite du titre si pas de toolbar */}
+            {showActionsInTitle && (
+              <div className="flex-shrink-0 flex items-center">{actions}</div>
             )}
           </div>
-          {/* Actions alignées à droite du titre si pas de toolbar */}
-          {showActionsInTitle && (
-            <div className="flex-shrink-0 flex items-center">{actions}</div>
-          )}
-        </div>
-      )}
+        )}
 
-      {/* Barre d'outils - seulement si on a du contenu (recherche, filtres, viewSwitcher) ou des actions sans titre */}
-      {(hasToolbarControls || (actions && !title)) && (
-        <div className="flex items-center gap-3 flex-nowrap overflow-x-auto overflow-y-visible pt-4 pb-2 -mx-1 px-1">
+        {/* Barre d'outils - seulement si on a du contenu (recherche, filtres, viewSwitcher) ou des actions sans titre */}
+        {(hasToolbarControls || (actions && !title)) && (
+        <div className="toolbar-no-outline flex items-center gap-3 flex-nowrap m-0 p-0 relative w-full min-w-0">
+          <div className="flex items-center gap-3 flex-nowrap min-w-0 flex-1">
         {/* Recherche expandable */}
         {search && (
           <>
@@ -148,7 +152,12 @@ export function PageToolbar({
         {/* Filtres */}
         {filters.map((filter, index) => (
           <div key={index} className="flex items-center gap-3 flex-shrink-0">
-            {filter}
+            {isValidElement(filter) 
+              ? cloneElement(filter, { 
+                  ...(filter.props as Record<string, unknown>),
+                  compact: isCompact,
+                } as any)
+              : filter}
             {/* Diviseur après le filtre sauf pour le dernier */}
             {index < filters.length - 1 && (
               <div className="h-9 w-px bg-border flex-shrink-0" />
@@ -157,16 +166,8 @@ export function PageToolbar({
         ))}
 
         {/* Espace flexible pour pousser les éléments de droite à droite */}
-        {!hasLeftContent && (viewSwitcher || actions) && (
+        {(viewSwitcher || actions) && (
           <div className="flex-1" />
-        )}
-
-        {/* Diviseur avant les éléments de droite si on a du contenu à gauche */}
-        {hasLeftContent && (viewSwitcher || actions) && (
-          <>
-            <div className="flex-1" />
-            <div className="h-9 w-px bg-border flex-shrink-0" />
-          </>
         )}
 
         {/* Switch de vue */}
@@ -176,9 +177,11 @@ export function PageToolbar({
         {actions && !showActionsInTitle && (
           <div className="flex-shrink-0">{actions}</div>
         )}
+          </div>
         </div>
-      )}
-    </div>
+        )}
+      </div>
+    </TooltipProvider>
   )
 }
 

@@ -39,3 +39,5 @@ npx tsx scripts/check-time-entries-table.ts
 2. Exécuter : `npx tsx scripts/setup-and-migrate-time-entries.ts`
 3. Vérifier que tout fonctionne
 
+
+

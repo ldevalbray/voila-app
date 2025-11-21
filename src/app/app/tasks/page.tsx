@@ -29,17 +29,15 @@ export default async function TasksPage() {
   }
   
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
+    <div className="flex-1 pt-8 px-8">
       <PageToolbar
-        title={t('title')}
-        description={t('description')}
         actions={
           <TasksPageClient projects={projects} epics={allEpics} variant="toolbar" />
         }
       />
 
       {/* Content */}
-      <Card className="border-border/50">
+      <Card className="border-border/50 mt-6">
         <CardHeader>
           <CardTitle className="text-lg">{t('tasksList')}</CardTitle>
           <CardDescription>

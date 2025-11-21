@@ -5,7 +5,6 @@ import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { ProjectTimePageClient } from './project-time-page-client'
-import { PageToolbar } from '@/components/layout/page-toolbar'
 
 /**
  * Page Time d'un projet (Internal mode)
@@ -76,19 +75,8 @@ export default async function ProjectTimePage({
   // Récupérer les stats
   const stats = await getTimeStats(projectId)
 
-  const tCommon = await getTranslations('common')
-
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={tTime('title') || t('timeTracking')}
-        breadcrumbs={[
-          { label: tCommon('home'), href: '/app' },
-          { label: t('projects'), href: '/app/projects' },
-          { label: project.name, href: `/app/projects/${projectId}/overview` },
-          { label: tTime('title') || t('timeTracking'), isCurrent: true },
-        ]}
-      />
+    <div className="flex-1 pt-8 px-8">
       <ProjectTimePageClient
         projectId={projectId}
         initialEntries={entries}

@@ -21,6 +21,7 @@ import { useTranslations } from 'next-intl'
 import { formatAmount, formatBilledMinutes } from '@/lib/billing-utils'
 import { useRouter } from 'next/navigation'
 import { deleteInvoice, fetchProjectInvoices } from '@/lib/actions/invoices'
+import { SkeletonTable } from '@/components/ui/skeleton'
 import {
   Dialog,
   DialogContent,
@@ -49,6 +50,7 @@ export function InvoicesPageClient({
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null)
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Synchroniser le state avec les props quand elles changent (après router.refresh())
   useEffect(() => {
@@ -107,6 +109,7 @@ export function InvoicesPageClient({
     if (!deletingInvoice) return
 
     setIsDeleting(true)
+    setIsLoading(true)
     try {
       const result = await deleteInvoice(deletingInvoice.id)
       if (result.error) {
@@ -126,26 +129,30 @@ export function InvoicesPageClient({
       console.error('Unexpected error deleting invoice:', error)
     } finally {
       setIsDeleting(false)
+      setIsLoading(false)
     }
   }
 
   const handleFormSuccess = async () => {
     setIsFormOpen(false)
     setEditingInvoice(null)
-    // Recharger les invoices depuis le serveur
-    const result = await fetchProjectInvoices(projectId)
-    if (result.data) {
-      setInvoices(result.data)
+    setIsLoading(true)
+    try {
+      // Recharger les invoices depuis le serveur
+      const result = await fetchProjectInvoices(projectId)
+      if (result.data) {
+        setInvoices(result.data)
+      }
+      // Revalider le serveur pour que les props soient à jour aussi
+      router.refresh()
+    } finally {
+      setIsLoading(false)
     }
-    // Revalider le serveur pour que les props soient à jour aussi
-    router.refresh()
   }
 
   return (
     <div className="space-y-6">
       <PageToolbar
-        title={t('title')}
-        description={t('description', { projectName: project.name })}
         actions={
           <Button onClick={handleCreateClick}>
             <Plus className="mr-2 h-4 w-4" />
@@ -154,7 +161,11 @@ export function InvoicesPageClient({
         }
       />
 
-      {invoices.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
+          <SkeletonTable rows={5} />
+        </div>
+      ) : invoices.length === 0 ? (
         <EmptyState
           icon={Receipt}
           title={t('noInvoices')}

@@ -31,19 +31,18 @@ export default async function ProjectDocumentsPage({
   }
 
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={t('projectDocuments')}
-        description={t('documentsDescription', { projectName: project.name })}
-        actions={
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('uploadDocument')}
-          </Button>
-        }
-      />
+    <div className="flex-1 pt-8 px-8">
+      <div className="space-y-6">
+        <PageToolbar
+          actions={
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              {t('uploadDocument')}
+            </Button>
+          }
+        />
 
-      <Card className="border-border/50">
+        <Card className="border-border/50">
         <CardHeader>
           <CardTitle className="text-lg">{t('projectDocuments')}</CardTitle>
           <CardDescription>
@@ -58,6 +57,7 @@ export default async function ProjectDocumentsPage({
           />
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

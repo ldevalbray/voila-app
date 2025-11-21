@@ -16,8 +16,8 @@ export default async function PortalLayout({
     const user = await requireAuth()
     const { hasInternalRole, hasClientRole } = await getUserModes()
 
-    // Si l'utilisateur n'a pas de rôle client mais a un rôle interne, rediriger vers /app
-    if (!hasClientRole && hasInternalRole) {
+    // Si l'utilisateur a un rôle interne, rediriger vers /app (priorité au mode freelance)
+    if (hasInternalRole) {
       redirect('/app')
     }
 

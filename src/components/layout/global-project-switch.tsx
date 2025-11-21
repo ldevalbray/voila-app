@@ -9,7 +9,7 @@ import { SidebarMenuButton } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import { LayoutGrid, FolderKanban, Home, FolderOpen } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface GlobalProjectSwitchProps {
   basePath: '/app' | '/portal'
@@ -140,27 +140,78 @@ export function GlobalProjectSwitch({ basePath, projects }: GlobalProjectSwitchP
   }
 
   // En mode expanded, afficher le SegmentedControl avec icônes
+  const containerRef = useRef<HTMLDivElement>(null)
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const [indicatorStyle, setIndicatorStyle] = useState<{
+    left: number
+    width: number
+  }>({ left: 0, width: 0 })
+
+  const options = [
+    { value: 'global', label: t('global'), icon: LayoutGrid },
+    { value: 'project', label: t('project'), icon: FolderKanban },
+  ]
+  const activeIndex = options.findIndex((opt) => opt.value === currentValue)
+
+  // Calculer la position et la largeur de la barre indicatrice
+  useEffect(() => {
+    const updateIndicator = () => {
+      if (activeIndex === -1 || !containerRef.current) return
+
+      const activeButton = buttonRefs.current[activeIndex]
+      if (!activeButton) return
+
+      const containerRect = containerRef.current.getBoundingClientRect()
+      const buttonRect = activeButton.getBoundingClientRect()
+
+      setIndicatorStyle({
+        left: buttonRect.left - containerRect.left,
+        width: buttonRect.width,
+      })
+    }
+
+    // Mettre à jour immédiatement
+    updateIndicator()
+
+    // Mettre à jour lors du redimensionnement
+    window.addEventListener('resize', updateIndicator)
+    return () => window.removeEventListener('resize', updateIndicator)
+  }, [activeIndex, currentValue])
+
   return (
     <div className="w-full">
       <div
+        ref={containerRef}
         className={cn(
-          'inline-flex w-full rounded-lg border border-sidebar-border/50 bg-sidebar-accent/30 p-0',
+          'relative inline-flex w-full rounded-md border border-sidebar-border/50 bg-sidebar-accent/30 p-0',
           'backdrop-blur-sm transition-all duration-200',
           'hover:border-sidebar-border hover:bg-sidebar-accent/40'
         )}
         role="radiogroup"
         aria-label="Global/Project switch"
       >
-        {[
-          { value: 'global', label: t('global'), icon: LayoutGrid },
-          { value: 'project', label: t('project'), icon: FolderKanban },
-        ].map((option) => {
+        {/* Barre indicatrice animée */}
+        {activeIndex !== -1 && (
+          <div
+            className="absolute bottom-0 h-0.5 bg-foreground/40 rounded-full transition-all duration-300 ease-out z-10"
+            style={{
+              left: `${indicatorStyle.left}px`,
+              width: `${indicatorStyle.width}px`,
+              transform: 'translateY(0)',
+            }}
+          />
+        )}
+
+        {options.map((option, index) => {
           const Icon = option.icon
           const isActive = option.value === currentValue
           
           return (
             <button
               key={option.value}
+              ref={(el) => {
+                buttonRefs.current[index] = el
+              }}
               type="button"
               role="radio"
               aria-checked={isActive}
@@ -209,17 +260,6 @@ export function GlobalProjectSwitch({ basePath, projects }: GlobalProjectSwitchP
               >
                 {option.label}
               </span>
-              
-              {/* Indicateur de sélection animé */}
-              {isActive && (
-                <div
-                  className={cn(
-                    'absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full',
-                    'bg-sidebar-primary transition-all duration-300 ease-out',
-                    'animate-in fade-in slide-in-from-bottom-1'
-                  )}
-                />
-              )}
             </button>
           )
         })}

@@ -104,3 +104,5 @@ Les migrations doivent être exécutées dans l'ordre numérique :
 - [Documentation Supabase Migrations](https://supabase.com/docs/guides/cli/local-development#database-migrations)
 - [Supabase RLS Policies](https://supabase.com/docs/guides/auth/row-level-security)
 
+
+

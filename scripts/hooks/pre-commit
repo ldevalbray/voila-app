@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# Hook pre-commit pour vérifier les traductions
+#
+
+# Exécuter le script de vérification des traductions
+pnpm check-translations
+
+# Si le script retourne une erreur, bloquer le commit
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Le commit a été bloqué car des clés de traduction manquent."
+  echo "   Veuillez ajouter les clés manquantes avant de commiter."
+  exit 1
+fi
+
+exit 0
+

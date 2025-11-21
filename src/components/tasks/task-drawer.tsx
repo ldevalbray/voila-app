@@ -246,7 +246,7 @@ export function TaskDrawer({
           {/* Titre */}
           <div className="space-y-2 animate-slide-up-fade" style={{ animationDelay: '0.1s', animationFillMode: 'both', animationDuration: '0.3s' }}>
             <Label htmlFor="title" className="font-medium">
-              {t('title')} *
+              {t('taskTitle')} *
             </Label>
             <Input
               id="title"
@@ -255,14 +255,14 @@ export function TaskDrawer({
                 setFormData({ ...formData, title: e.target.value })
               }
               className="text-body font-medium input-modern transition-all duration-300"
-              placeholder={t('title')}
+              placeholder={t('taskTitle')}
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2 animate-slide-up-fade" style={{ animationDelay: '0.15s', animationFillMode: 'both', animationDuration: '0.3s' }}>
             <Label htmlFor="description" className="text-sm font-medium">
-              {t('description')}
+              {t('taskDescription')}
             </Label>
             <Textarea
               id="description"
@@ -272,7 +272,7 @@ export function TaskDrawer({
               }
               rows={6}
               className="resize-none input-modern transition-all duration-300"
-              placeholder={t('description')}
+              placeholder={t('taskDescription')}
             />
           </div>
 

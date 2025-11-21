@@ -27,7 +27,7 @@ export default async function ProjectInvoicesPage({
   })
 
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
+    <div className="flex-1 space-y-6 pt-8 px-8">
       <InvoicesPageClient
         projectId={projectId}
         project={project}

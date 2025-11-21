@@ -239,4 +239,28 @@
   .stagger-child > *:nth-child(6) { animation-delay: 0.6s; }
   .stagger-child > *:nth-child(7) { animation-delay: 0.7s; }
   .stagger-child > *:nth-child(8) { animation-delay: 0.8s; }
+  
+  /* Toolbar: retirer toutes les outlines pour éviter qu'elles soient coupées par overflow-x-auto */
+  .toolbar-no-outline *:focus-visible,
+  .toolbar-no-outline *:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-width: 0px !important;
+    --tw-ring-offset-width: 0px !important;
+  }
+  
+  /* Cibler spécifiquement tous les éléments interactifs dans la toolbar */
+  .toolbar-no-outline input:focus-visible,
+  .toolbar-no-outline button:focus-visible,
+  .toolbar-no-outline [role="button"]:focus-visible,
+  .toolbar-no-outline [role="combobox"]:focus-visible,
+  .toolbar-no-outline [data-radix-select-trigger]:focus-visible,
+  .toolbar-no-outline [data-radix-select-trigger]:focus,
+  .toolbar-no-outline [data-radix-popover-trigger]:focus-visible,
+  .toolbar-no-outline [data-radix-popover-trigger]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-width: 0px !important;
+    --tw-ring-offset-width: 0px !important;
+  }
 }

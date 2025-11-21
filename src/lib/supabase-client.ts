@@ -14,3 +14,5 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const createSupabaseBrowserClient = () =>
   createBrowserClient(supabaseUrl, supabaseAnonKey)
 
+
+

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ReactNode } from 'react'
+import { ReactNode, forwardRef } from 'react'
 import {
   SidebarMenuButton,
   SidebarMenuItem,
@@ -21,13 +21,13 @@ interface NavItemProps {
  * Composant réutilisable pour un item de navigation
  * Design Linear-inspired avec animations fluides et états visuels clairs
  */
-export function NavItem({
+export const NavItem = forwardRef<HTMLLIElement, NavItemProps>(({
   href,
   label,
   icon,
   isActive: isActiveProp,
   exact = false,
-}: NavItemProps) {
+}, ref) => {
   const pathname = usePathname()
   const isActive =
     isActiveProp !== undefined
@@ -37,7 +37,7 @@ export function NavItem({
         : pathname?.startsWith(href)
 
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem ref={ref}>
       <SidebarMenuButton
         asChild
         isActive={isActive}
@@ -49,10 +49,6 @@ export function NavItem({
           isActive && [
             'bg-sidebar-accent text-sidebar-foreground font-medium',
             'shadow-sm',
-            'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2',
-            'before:w-0.5 before:h-5 before:bg-sidebar-primary before:rounded-r-full',
-            'before:transition-all before:duration-200',
-            'group-data-[collapsible=icon]:before:hidden',
           ],
           !isActive && 'text-sidebar-foreground/70'
         )}
@@ -80,5 +76,7 @@ export function NavItem({
       </SidebarMenuButton>
     </SidebarMenuItem>
   )
-}
+})
+
+NavItem.displayName = 'NavItem'
 

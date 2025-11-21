@@ -28,28 +28,20 @@ export default async function ProjectEpicsPage({
   const epics = await getEpicsByProjectId(projectId)
   const sprints = await getSprintsByProjectId(projectId)
 
-  const tCommon = await getTranslations('common')
-
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={t('epicsAndSprints') || t('epics')}
-        breadcrumbs={[
-          { label: tCommon('home'), href: '/app' },
-          { label: t('projects'), href: '/app/projects' },
-          { label: project.name, href: `/app/projects/${projectId}/overview` },
-          { label: t('epics') || t('epicsAndSprints'), isCurrent: true },
-        ]}
-      />
-      <EpicsPageClient
-        projectId={projectId}
-        newEpicLabel={t('newEpic')}
-        newSprintLabel={t('newSprint')}
-      />
-
+    <div className="flex-1 pt-8 px-8">
+      <PageToolbar />
       <div className="space-y-6">
+        <EpicsPageClient
+          projectId={projectId}
+          newEpicLabel={t('newEpic')}
+          newSprintLabel={t('newSprint')}
+        />
+
+        <div className="space-y-6">
         <EpicsList projectId={projectId} epics={epics} />
         <SprintsList projectId={projectId} sprints={sprints} />
+        </div>
       </div>
     </div>
   )

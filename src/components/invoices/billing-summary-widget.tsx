@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Card,
   CardContent,
@@ -8,13 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Link } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { formatDuration } from '@/lib/time-utils'
 import { getBillingStatsAction } from '@/lib/actions/billing-stats'
 import { calculateBillingCoverage, formatBilledMinutes } from '@/lib/billing-utils'
-import NextLink from 'next/link'
 
 interface BillingSummaryWidgetProps {
   projectId: string
@@ -26,6 +25,7 @@ export function BillingSummaryWidget({
   compact = false,
 }: BillingSummaryWidgetProps) {
   const t = useTranslations('projects.billing')
+  const router = useRouter()
   const [stats, setStats] = useState<{
     total_logged_minutes: number
     total_billed_minutes: number
@@ -74,7 +74,15 @@ export function BillingSummaryWidget({
   if (compact) {
     return (
       <Card className="border-border/50">
-        <CardHeader>
+        <CardHeader
+          primaryAction={{
+            icon: Link,
+            onClick: () => {
+              router.push(`/app/projects/${projectId}/invoices`)
+            },
+            label: t('viewInvoices'),
+          }}
+        >
           <CardTitle className="text-lg">{t('summary')}</CardTitle>
         </CardHeader>
         <CardContent>
@@ -87,12 +95,6 @@ export function BillingSummaryWidget({
                 {formatDuration(stats.unbilled_minutes)}
               </span>
             </div>
-            <NextLink href={`/app/projects/${projectId}/invoices`}>
-              <Button variant="outline" size="sm" className="w-full">
-                <Link className="mr-2 h-4 w-4" />
-                {t('viewInvoices')}
-              </Button>
-            </NextLink>
           </div>
         </CardContent>
       </Card>
@@ -101,7 +103,15 @@ export function BillingSummaryWidget({
 
   return (
     <Card className="border-border/50">
-      <CardHeader>
+      <CardHeader
+        primaryAction={{
+          icon: Link,
+          onClick: () => {
+            router.push(`/app/projects/${projectId}/invoices`)
+          },
+          label: t('viewInvoices'),
+        }}
+      >
         <CardTitle className="text-lg">{t('summary')}</CardTitle>
         <CardDescription>{t('summaryDescription')}</CardDescription>
       </CardHeader>
@@ -141,14 +151,6 @@ export function BillingSummaryWidget({
               </span>
             </div>
           )}
-          <div className="pt-2 border-t">
-            <NextLink href={`/app/projects/${projectId}/invoices`}>
-              <Button variant="outline" size="sm" className="w-full">
-                <Link className="mr-2 h-4 w-4" />
-                {t('viewInvoices')}
-              </Button>
-            </NextLink>
-          </div>
         </div>
       </CardContent>
     </Card>

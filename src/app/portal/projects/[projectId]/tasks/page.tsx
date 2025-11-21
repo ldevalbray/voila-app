@@ -30,13 +30,11 @@ export default async function PortalProjectTasksPage({
   }
 
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={t('projectTasks')}
-        description={t('tasksDescription', { projectName: project.name })}
-      />
+    <div className="flex-1 pt-8 px-8">
+      <div className="space-y-6">
+        <PageToolbar />
 
-      <Card className="border-border/50">
+        <Card className="border-border/50">
         <CardHeader>
           <CardTitle className="text-lg">{t('projectTasks')}</CardTitle>
           <CardDescription>
@@ -51,6 +49,7 @@ export default async function PortalProjectTasksPage({
           />
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

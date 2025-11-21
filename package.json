@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check-translations": "node scripts/check-translations.js",
+    "install-hooks": "bash scripts/install-hooks.sh",
+    "postinstall": "bash scripts/install-hooks.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

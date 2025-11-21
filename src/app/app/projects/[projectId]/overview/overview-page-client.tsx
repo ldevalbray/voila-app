@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSprintContext } from '@/components/layout/sprint-context'
 import { SprintPicker } from '@/components/layout/sprint-picker'
 import { getTaskStatsAction } from '@/lib/actions/task-stats'
@@ -14,8 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import { PageToolbar } from '@/components/layout/page-toolbar'
 import { useTranslations } from 'next-intl'
 import { Project } from '@/lib/projects'
@@ -44,6 +43,7 @@ export function OverviewPageClient({
   epics,
 }: OverviewPageClientProps) {
   const t = useTranslations('projects')
+  const router = useRouter()
   const { selectedSprintId } = useSprintContext()
   const [taskStats, setTaskStats] = useState(initialTaskStats)
   const [isLoading, setIsLoading] = useState(false)
@@ -82,11 +82,6 @@ export function OverviewPageClient({
   return (
     <div className="space-y-6">
       <PageToolbar
-        breadcrumbs={[
-          { label: t('home'), href: '/app' },
-          { label: t('projects'), href: '/app/projects' },
-          { label: project.name },
-        ]}
         filters={[<SprintPicker key="sprint" compact />]}
       />
 
@@ -114,7 +109,15 @@ export function OverviewPageClient({
 
         {/* Tasks stats */}
         <Card className="border-border/50">
-          <CardHeader>
+          <CardHeader
+            primaryAction={{
+              icon: LinkIcon,
+              onClick: () => {
+                router.push(`/app/projects/${projectId}/tasks`)
+              },
+              label: t('viewAllTasks'),
+            }}
+          >
             <CardTitle className="text-lg">
               {selectedSprintId ? t('tasksInSprint') : t('tasksOverview')}
             </CardTitle>
@@ -153,14 +156,6 @@ export function OverviewPageClient({
                     {taskStats.open_count}
                   </span>
                 </div>
-                <div className="pt-2 border-t">
-                  <Link href={`/app/projects/${projectId}/tasks`}>
-                    <Button variant="outline" size="sm" className="w-full">
-                      <LinkIcon className="mr-2 h-4 w-4" />
-                      {t('viewAllTasks')}
-                    </Button>
-                  </Link>
-                </div>
               </div>
             )}
           </CardContent>
@@ -168,7 +163,15 @@ export function OverviewPageClient({
 
         {/* Epics stats */}
         <Card className="border-border/50">
-          <CardHeader>
+          <CardHeader
+            primaryAction={{
+              icon: LinkIcon,
+              onClick: () => {
+                router.push(`/app/projects/${projectId}/epics`)
+              },
+              label: t('viewAllEpics'),
+            }}
+          >
             <CardTitle className="text-lg">{t('epicsOverview')}</CardTitle>
             <CardDescription>
               {t('epicsOverviewDescription')}
@@ -184,14 +187,6 @@ export function OverviewPageClient({
                   </span>
                 </div>
                 <span className="text-lg font-semibold">{epics.length}</span>
-              </div>
-              <div className="pt-2 border-t">
-                <Link href={`/app/projects/${projectId}/epics`}>
-                  <Button variant="outline" size="sm" className="w-full">
-                    <LinkIcon className="mr-2 h-4 w-4" />
-                    {t('viewAllEpics')}
-                  </Button>
-                </Link>
               </div>
             </div>
           </CardContent>

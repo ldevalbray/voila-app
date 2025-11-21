@@ -4,7 +4,6 @@ import { getEpicsByProjectId } from '@/lib/epics'
 import { notFound } from 'next/navigation'
 import { TasksPageClient } from './tasks-page-client'
 import { getTranslations } from 'next-intl/server'
-import { PageToolbar } from '@/components/layout/page-toolbar'
 
 /**
  * Page Tasks d'un projet (Internal mode)
@@ -55,19 +54,8 @@ export default async function ProjectTasksPage({
   // Récupérer les stats pour l'overview (sans filtre sprint pour l'instant)
   const stats = await getTaskStats(projectId)
 
-  const tCommon = await getTranslations('common')
-
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={t('tasks')}
-        breadcrumbs={[
-          { label: tCommon('home'), href: '/app' },
-          { label: t('projects'), href: '/app/projects' },
-          { label: project.name, href: `/app/projects/${projectId}/overview` },
-          { label: t('tasks'), isCurrent: true },
-        ]}
-      />
+    <div className="flex-1 pt-8 px-8">
       <TasksPageClient
         projectId={projectId}
         initialTasks={tasks}

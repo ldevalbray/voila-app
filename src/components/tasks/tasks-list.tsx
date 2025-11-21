@@ -26,7 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { PageToolbar } from '@/components/layout/page-toolbar'
-import { Plus, Eye, EyeOff, X, Table2, LayoutGrid, ChevronDown, Search, CheckSquare } from 'lucide-react'
+import { Plus, Eye, EyeOff, X, Table2, LayoutGrid, ChevronDown, Search, CheckSquare, Filter, Tag, FolderKanban } from 'lucide-react'
 import { TaskForm } from './task-form'
 import { TasksKanbanView } from './tasks-kanban-view'
 import { TaskDrawer } from './task-drawer'
@@ -37,6 +37,7 @@ import { SprintPicker } from '@/components/layout/sprint-picker'
 import { TaskTimeBadge } from '@/components/time/task-time-badge'
 import { EmptyState } from '@/components/layout/empty-state'
 import { useProjectContext } from '@/components/layout/project-context'
+import { CompactFilterButton } from '@/components/ui/compact-filter-button'
 
 const TASKS_VIEW_KEY = 'voila_tasks_view'
 
@@ -312,88 +313,16 @@ export function TasksList({
     return `${typeFilter.length} ${t('filterType')}`
   }
 
-  // Préparer les filtres pour PageToolbar
-  const filterComponents = [
-    // Filtre Statut
-    <Popover key="status">
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn(
-            'h-9 text-body-sm justify-between min-w-[120px] max-w-[160px] flex-shrink-0',
-            statusFilter.length > 0 && 'bg-accent'
-          )}
-        >
-          <span className="truncate">{getStatusSelectLabel()}</span>
-          <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-2" align="start">
-        <div className="space-y-2">
-          {['todo', 'in_progress', 'blocked', 'waiting_for_client', 'done'].map((status) => (
-            <div
-              key={status}
-              className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
-              onClick={() => handleStatusMultiSelect(status, !statusFilter.includes(status))}
-            >
-              <Checkbox
-                checked={statusFilter.includes(status)}
-                onCheckedChange={(checked) => handleStatusMultiSelect(status, !!checked)}
-              />
-              <label className="text-body-sm cursor-pointer flex-1 flex items-center justify-between">
-                <span>{getTaskStatusLabel(status)}</span>
-                <span className="ml-2 text-caption text-muted-foreground">
-                  ({stats.by_status[status] || 0})
-                </span>
-              </label>
-            </div>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>,
-    // Filtre Type
-    <Popover key="type">
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn(
-            'h-9 text-body-sm justify-between min-w-[120px] max-w-[160px] flex-shrink-0',
-            typeFilter.length > 0 && 'bg-accent'
-          )}
-        >
-          <span className="truncate">{getTypeSelectLabel()}</span>
-          <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-2" align="start">
-        <div className="space-y-2">
-          {['bug', 'new_feature', 'improvement'].map((type) => (
-            <div
-              key={type}
-              className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
-              onClick={() => handleTypeMultiSelect(type, !typeFilter.includes(type))}
-            >
-              <Checkbox
-                checked={typeFilter.includes(type)}
-                onCheckedChange={(checked) => handleTypeMultiSelect(type, !!checked)}
-              />
-              <label className="text-body-sm cursor-pointer flex-1 flex items-center justify-between">
-                <span>{getTaskTypeLabel(type)}</span>
-                <span className="ml-2 text-caption text-muted-foreground">
-                  ({typeCounts[type] || 0})
-                </span>
-              </label>
-            </div>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>,
-    // Filtre Epic
-    <Select key="epic" value={epicFilter} onValueChange={handleEpicFilter}>
-      <SelectTrigger className="h-9 text-body-sm min-w-[160px] max-w-[200px] flex-shrink-0">
-        <SelectValue placeholder={t('epics')} />
+  // Composant EpicFilter avec support compact
+  const EpicFilter = ({ compact }: { compact?: boolean }) => (
+    <Select value={epicFilter} onValueChange={handleEpicFilter}>
+      <SelectTrigger
+        compact={compact}
+        icon={<FolderKanban className="h-4 w-4" />}
+        compactTitle={getEpicLabel(epicFilter)}
+        className={compact ? undefined : "h-9 text-body-sm min-w-[160px] max-w-[200px] flex-shrink-0"}
+      >
+        {!compact && <SelectValue placeholder={t('epics')} />}
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="all">{t('allEpics')}</SelectItem>
@@ -404,7 +333,73 @@ export function TasksList({
           </SelectItem>
         ))}
       </SelectContent>
-    </Select>,
+    </Select>
+  )
+
+  // Préparer les filtres pour PageToolbar
+  // Le prop compact sera passé automatiquement par PageToolbar via cloneElement
+  const filterComponents = [
+    // Filtre Statut avec CompactFilterButton
+    <CompactFilterButton
+      key="status"
+      label={getStatusSelectLabel()}
+      icon={<Filter className="h-4 w-4" />}
+      active={statusFilter.length > 0}
+    >
+      <div className="space-y-2">
+        {['todo', 'in_progress', 'blocked', 'waiting_for_client', 'done'].map((status) => (
+          <div
+            key={status}
+            className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
+            onClick={() => handleStatusMultiSelect(status, !statusFilter.includes(status))}
+          >
+            <Checkbox
+              checked={statusFilter.includes(status)}
+              onCheckedChange={(checked) => handleStatusMultiSelect(status, !!checked)}
+            />
+            <label className="text-body-sm cursor-pointer flex-1 flex items-center justify-between">
+              <span>{getTaskStatusLabel(status)}</span>
+              <span className="ml-2 text-caption text-muted-foreground">
+                ({stats.by_status[status] || 0})
+              </span>
+            </label>
+          </div>
+        ))}
+      </div>
+    </CompactFilterButton>,
+    
+    // Filtre Type avec CompactFilterButton
+    <CompactFilterButton
+      key="type"
+      label={getTypeSelectLabel()}
+      icon={<Tag className="h-4 w-4" />}
+      active={typeFilter.length > 0}
+    >
+      <div className="space-y-2">
+        {['bug', 'new_feature', 'improvement'].map((type) => (
+          <div
+            key={type}
+            className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
+            onClick={() => handleTypeMultiSelect(type, !typeFilter.includes(type))}
+          >
+            <Checkbox
+              checked={typeFilter.includes(type)}
+              onCheckedChange={(checked) => handleTypeMultiSelect(type, !!checked)}
+            />
+            <label className="text-body-sm cursor-pointer flex-1 flex items-center justify-between">
+              <span>{getTaskTypeLabel(type)}</span>
+              <span className="ml-2 text-caption text-muted-foreground">
+                ({typeCounts[type] || 0})
+              </span>
+            </label>
+          </div>
+        ))}
+      </div>
+    </CompactFilterButton>,
+    
+    // Filtre Epic avec Select en mode compact
+    <EpicFilter key="epic" />,
+    
     // Filtre Sprint
     <SprintPicker key="sprint" compact />,
   ]
@@ -443,12 +438,6 @@ export function TasksList({
     <div className="space-y-3">
       {/* Barre d'outils avec PageToolbar */}
       <PageToolbar
-        breadcrumbs={[
-          { label: t('home'), href: '/app' },
-          { label: t('projects'), href: '/app/projects' },
-          ...(project ? [{ label: project.name, href: `/app/projects/${projectId}/overview` }] : []),
-          { label: t('tasks') },
-        ]}
         search={{
           placeholder: t('searchTasks'),
           value: searchQuery,
@@ -566,12 +555,16 @@ export function TasksList({
                 }
               />
             ) : (
-              <div className="overflow-x-auto scrollbar-thin" role="region" aria-label={t('tasksList')}>
+              <div 
+                className="overflow-x-auto scrollbar-thin h-[calc(100vh-280px)] max-h-[800px] overflow-y-auto" 
+                role="region" 
+                aria-label={t('tasksList')}
+              >
                 <div className="min-w-full inline-block align-middle">
                   <Table role="table" aria-label={t('tasksTable')}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[300px]">{t('title')}</TableHead>
+                      <TableHead className="w-[300px]">{t('taskTitle')}</TableHead>
                       <TableHead>{t('status')}</TableHead>
                       <TableHead>{t('type')}</TableHead>
                       <TableHead>{t('priority')}</TableHead>

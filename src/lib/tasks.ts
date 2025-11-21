@@ -162,17 +162,32 @@ export async function getTasksByProjectId(
       )
     }
 
-    const [{ data: tasks, error }, { count }] = await Promise.all([
+    const [{ data: tasks, error: tasksError }, { count, error: countError }] = await Promise.all([
       query,
       countQuery,
     ])
 
-    if (error) {
-      console.error('Error fetching tasks:', error)
+    if (tasksError) {
+      console.error('Error fetching tasks:', {
+        message: tasksError.message,
+        details: tasksError.details,
+        hint: tasksError.hint,
+        code: tasksError.code,
+      })
       return {
         data: [],
         pagination: calculatePaginationMetadata(0, 1, DEFAULT_PAGE_SIZE),
       }
+    }
+
+    if (countError) {
+      console.error('Error counting tasks:', {
+        message: countError.message,
+        details: countError.details,
+        hint: countError.hint,
+        code: countError.code,
+      })
+      // Continuer quand même si on a des tâches
     }
 
     if (!tasks || tasks.length === 0) {

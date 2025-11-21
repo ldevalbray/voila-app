@@ -32,10 +32,8 @@ export default async function ProjectsPage() {
   const t = await getTranslations('projects')
 
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
+    <div className="flex-1 pt-8 px-8">
       <PageToolbar
-        title={t('title')}
-        description={t('description')}
         actions={
           <Button>
             <Plus className="mr-2 h-4 w-4" />
@@ -46,7 +44,7 @@ export default async function ProjectsPage() {
 
       {/* Projects Table */}
       {projects.length === 0 ? (
-        <Card className="border-border/50">
+        <Card className="border-border/50 mt-6">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <Building2 className="h-16 w-16 text-muted-foreground/30 mb-4" />
             <h3 className="text-lg font-semibold mb-2">{t('noProjects')}</h3>
@@ -60,7 +58,7 @@ export default async function ProjectsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-border/50">
+        <Card className="border-border/50 mt-6">
           <CardHeader>
             <CardTitle className="text-lg">{t('allProjects')}</CardTitle>
             <CardDescription>

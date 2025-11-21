@@ -25,9 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, ChevronDown } from 'lucide-react'
+import { CompactFilterButton } from '@/components/ui/compact-filter-button'
+import { Plus, User, Tag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TimeEntryForm } from '@/components/time/time-entry-form'
 import { useSprintContext } from '@/components/layout/sprint-context'
@@ -148,107 +148,88 @@ export function ProjectTimePageClient({
     router.push(`?${params.toString()}`)
   }
 
+  // Fonctions pour obtenir les labels des filtres
+  const getUserFilterLabel = () => {
+    if (selectedUsers.length === 0) return t('user')
+    if (selectedUsers.length === 1) {
+      const member = members.find((m) => m.id === selectedUsers[0])
+      return member ? getUserName(member) : t('user')
+    }
+    return `${selectedUsers.length} ${t('user')}`
+  }
+
+  const getCategoryFilterLabel = () => {
+    if (selectedCategories.length === 0) return t('category')
+    if (selectedCategories.length === 1) {
+      return categoryLabels[selectedCategories[0]] || t('category')
+    }
+    return `${selectedCategories.length} ${t('category')}`
+  }
+
   const filterComponents = [
-    <Popover key="user">
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn(
-            'h-9 text-body-sm justify-between min-w-[160px]',
-            selectedUsers.length > 0 && 'bg-accent'
-          )}
+    <CompactFilterButton
+      key="user"
+      label={getUserFilterLabel()}
+      icon={<User className="h-4 w-4" />}
+      active={selectedUsers.length > 0}
+    >
+      <div className="space-y-2">
+        <div
+          className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
+          onClick={() => {
+            setSelectedUsers([])
+            setTimeout(updateFilters, 0)
+          }}
         >
-          <span className="truncate">
-            {selectedUsers.length === 0
-              ? t('user')
-              : getUserName(
-                  members.find((m) => m.id === selectedUsers[0]) || {
-                    id: '',
-                    email: '',
-                    first_name: null,
-                    last_name: null,
-                  }
-                )}
-          </span>
-          <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-2" align="start">
-        <div className="space-y-2">
+          <Checkbox checked={selectedUsers.length === 0} />
+          <label className="text-body-sm cursor-pointer flex-1">
+            {t('allUsers') || 'Tous les utilisateurs'}
+          </label>
+        </div>
+        {members.map((member) => (
           <div
+            key={member.id}
             className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
             onClick={() => {
-              setSelectedUsers([])
+              setSelectedUsers([member.id])
               setTimeout(updateFilters, 0)
             }}
           >
-            <Checkbox checked={selectedUsers.length === 0} />
+            <Checkbox checked={selectedUsers.includes(member.id)} />
             <label className="text-body-sm cursor-pointer flex-1">
-              {t('allUsers') || 'Tous les utilisateurs'}
+              {getUserName(member)}
             </label>
           </div>
-          {members.map((member) => (
-            <div
-              key={member.id}
-              className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
-              onClick={() => {
-                setSelectedUsers([member.id])
-                setTimeout(updateFilters, 0)
-              }}
-            >
-              <Checkbox checked={selectedUsers.includes(member.id)} />
-              <label className="text-body-sm cursor-pointer flex-1">
-                {getUserName(member)}
-              </label>
-            </div>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>,
-    <Popover key="category">
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn(
-            'h-9 text-body-sm justify-between min-w-[160px]',
-            selectedCategories.length > 0 && 'bg-accent'
-          )}
-        >
-          <span className="truncate">
-            {selectedCategories.length === 0
-              ? t('category')
-              : selectedCategories.length === 1
-                ? categoryLabels[selectedCategories[0]]
-                : `${selectedCategories.length} ${t('category')}`}
-          </span>
-          <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-2" align="start">
-        <div className="space-y-2">
-          {Object.entries(categoryLabels).map(([key, label]) => (
-            <div
-              key={key}
-              className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
-              onClick={() => {
-                const newCategories = selectedCategories.includes(key)
-                  ? selectedCategories.filter((c) => c !== key)
-                  : [...selectedCategories, key]
-                setSelectedCategories(newCategories)
-                setTimeout(updateFilters, 0)
-              }}
-            >
-              <Checkbox checked={selectedCategories.includes(key)} />
-              <label className="text-body-sm cursor-pointer flex-1">
-                {label}
-              </label>
-            </div>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>,
+        ))}
+      </div>
+    </CompactFilterButton>,
+    <CompactFilterButton
+      key="category"
+      label={getCategoryFilterLabel()}
+      icon={<Tag className="h-4 w-4" />}
+      active={selectedCategories.length > 0}
+    >
+      <div className="space-y-2">
+        {Object.entries(categoryLabels).map(([key, label]) => (
+          <div
+            key={key}
+            className="flex items-center space-x-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer"
+            onClick={() => {
+              const newCategories = selectedCategories.includes(key)
+                ? selectedCategories.filter((c) => c !== key)
+                : [...selectedCategories, key]
+              setSelectedCategories(newCategories)
+              setTimeout(updateFilters, 0)
+            }}
+          >
+            <Checkbox checked={selectedCategories.includes(key)} />
+            <label className="text-body-sm cursor-pointer flex-1">
+              {label}
+            </label>
+          </div>
+        ))}
+      </div>
+    </CompactFilterButton>,
   ]
 
   // Filtrer les tâches par sprint si un sprint est sélectionné

@@ -174,7 +174,7 @@ export function TaskForm({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('title')} *</FormLabel>
+                  <FormLabel>{t('taskTitle')} *</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder={t('taskTitlePlaceholder') || 'Titre de la tâche'} />
                   </FormControl>
@@ -188,7 +188,7 @@ export function TaskForm({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('description')}</FormLabel>
+                  <FormLabel>{t('taskDescription')}</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}

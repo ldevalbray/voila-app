@@ -48,7 +48,7 @@ export default async function ProjectOverviewPage({
   }
 
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
+    <div className="flex-1 pt-8 px-8">
       <OverviewPageClient
         projectId={projectId}
         project={project}

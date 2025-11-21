@@ -24,17 +24,16 @@ export default async function ProjectSettingsPage({
   }
 
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={t('projectSettings')}
-        description={t('settingsDescription', { projectName: project.name })}
-      />
+    <div className="flex-1 pt-8 px-8">
+      <div className="space-y-6">
+        <PageToolbar />
 
-      <SettingsPageClient
+        <SettingsPageClient
         projectId={projectId}
         project={project}
         clients={clients}
       />
+      </div>
     </div>
   )
 }

@@ -30,34 +30,12 @@ export default async function PortalProjectOverviewPage({
   }
 
   return (
-    <div className="flex-1 space-y-6 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={
-          <div className="flex items-center gap-3">
-            <span>{project.name}</span>
-            <Badge
-              variant={project.status === 'active' ? 'default' : 'secondary'}
-            >
-              {project.status}
-            </Badge>
-          </div>
-        }
-        description={
-          project.client ? (
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              <span>{project.client.name}</span>
-              {project.description && <span className="mx-2">•</span>}
-              {project.description && <span>{project.description}</span>}
-            </div>
-          ) : (
-            project.description
-          )
-        }
-      />
+    <div className="flex-1 pt-8 px-8">
+      <div className="space-y-6">
+        <PageToolbar />
 
-      {/* Content Sections */}
-      <div className="grid gap-6 md:grid-cols-2">
+        {/* Content Sections */}
+        <div className="grid gap-6 md:grid-cols-2">
         {/* Summary */}
         <Card className="border-border/50">
           <CardHeader>
@@ -100,6 +78,7 @@ export default async function PortalProjectOverviewPage({
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   )

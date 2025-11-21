@@ -6,10 +6,9 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Inbox, CheckSquare, Receipt, TrendingUp, ArrowRight } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { PageToolbar } from '@/components/layout/page-toolbar'
 import { getTranslations } from 'next-intl/server'
+import { MyTasksCard, MyTasksSummaryCard } from './home-page-cards'
 
 /**
  * Page d'accueil globale (Internal mode)
@@ -20,18 +19,17 @@ export default async function AppHomePage() {
   const tNav = await getTranslations('navigation')
   
   return (
-    <div className="flex-1 space-y-8 px-6 pb-6 md:px-8 md:pb-8">
-      <PageToolbar
-        title={t('title')}
-        description={t('description')}
-      />
+    <div className="flex-1 pt-8 px-8">
+      <PageToolbar />
 
       {/* Stats Cards Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="border-border/50 hover:border-border transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('inbox')}</CardTitle>
-            <Inbox className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="pb-2">
+            <div className="flex flex-row items-center">
+              <Inbox className="h-4 w-4 text-muted-foreground mr-2" />
+              <CardTitle className="text-sm font-medium">{t('inbox')}</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
@@ -41,28 +39,14 @@ export default async function AppHomePage() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 hover:border-border transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('myTasks')}</CardTitle>
-            <CheckSquare className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t('assignedTasks')}
-            </p>
-            <Link href="/app/tasks" className="mt-2 inline-block">
-              <Button variant="ghost" size="sm" className="h-7 text-xs">
-                {t('viewAll')} <ArrowRight className="ml-1 h-3 w-3" />
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <MyTasksCard />
 
         <Card className="border-border/50 hover:border-border transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('projectsToInvoice')}</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="pb-2">
+            <div className="flex flex-row items-center">
+              <Receipt className="h-4 w-4 text-muted-foreground mr-2" />
+              <CardTitle className="text-sm font-medium">{t('projectsToInvoice')}</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
@@ -73,9 +57,11 @@ export default async function AppHomePage() {
         </Card>
 
         <Card className="border-border/50 hover:border-border transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('quickStats')}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="pb-2">
+            <div className="flex flex-row items-center">
+              <TrendingUp className="h-4 w-4 text-muted-foreground mr-2" />
+              <CardTitle className="text-sm font-medium">{t('quickStats')}</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">-</div>
@@ -87,7 +73,7 @@ export default async function AppHomePage() {
       </div>
 
       {/* Main Content Sections */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 mt-6">
         {/* Inbox / Notifications */}
         <Card className="border-border/50">
           <CardHeader>
@@ -107,27 +93,7 @@ export default async function AppHomePage() {
         </Card>
 
         {/* My tasks summary */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">{t('myTasksTitle')}</CardTitle>
-            <CardDescription>
-              {t('myTasksDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <CheckSquare className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-sm text-muted-foreground mb-4">
-                {t('noAssignedTasks')}
-              </p>
-              <Link href="/app/tasks">
-                <Button variant="outline" size="sm">
-                  {t('viewAllTasks')}
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+        <MyTasksSummaryCard />
 
         {/* Projects to invoice / at risk */}
         <Card className="border-border/50">
