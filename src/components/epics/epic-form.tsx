@@ -1,6 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import * as React from 'react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Epic } from '@/lib/epics'
 import { createEpic, updateEpic } from '@/lib/actions/epics'
 import {
@@ -13,7 +16,6 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -22,7 +24,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { useTranslations } from 'next-intl'
+import { showToast } from '@/lib/toast'
+import { epicFormSchema, type EpicFormValues } from '@/lib/validations/epic-form'
 
 interface EpicFormProps {
   projectId: string
@@ -41,49 +53,59 @@ export function EpicForm({
 }: EpicFormProps) {
   const t = useTranslations('projects')
   const tCommon = useTranslations('common')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  const [formData, setFormData] = useState({
-    title: epic?.title || '',
-    description: epic?.description || '',
-    status: epic?.status || 'open',
+  // Initialiser React Hook Form avec Zod
+  const form = useForm<EpicFormValues>({
+    resolver: zodResolver(epicFormSchema),
+    defaultValues: {
+      title: epic?.title || '',
+      description: epic?.description || '',
+      status: epic?.status || 'open',
+    },
+    mode: 'onChange', // Validation en temps réel
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
+  // Réinitialiser le formulaire quand l'epic ou l'état open change
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        title: epic?.title || '',
+        description: epic?.description || '',
+        status: epic?.status || 'open',
+      })
+    }
+  }, [open, epic, form])
 
+  const onSubmit = async (values: EpicFormValues) => {
     try {
       if (epic) {
         // Mise à jour
         const result = await updateEpic({
           id: epic.id,
-          ...formData,
+          ...values,
         })
         if (result.error) {
-          setError(result.error)
-          setIsSubmitting(false)
+          showToast.error(result.error)
           return
         }
+        showToast.success(t('epicUpdated') || 'Épopée mise à jour')
       } else {
         // Création
         const result = await createEpic({
           project_id: projectId,
-          ...formData,
+          ...values,
         })
         if (result.error) {
-          setError(result.error)
-          setIsSubmitting(false)
+          showToast.error(result.error)
           return
         }
+        showToast.success(t('epicCreated') || 'Épopée créée')
       }
 
       onSuccess()
     } catch (err) {
-      setError(tCommon('error'))
-      setIsSubmitting(false)
+      const errorMessage = err instanceof Error ? err.message : tCommon('error')
+      showToast.error(errorMessage)
     }
   }
 
@@ -97,81 +119,89 @@ export function EpicForm({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="title">{t('title')} *</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-              required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('title')} *</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder={t('epicTitlePlaceholder') || 'Titre de l\'épopée'} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">{t('description')}</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              rows={4}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('description')}</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      value={field.value || ''}
+                      rows={4}
+                      placeholder={t('epicDescriptionPlaceholder') || 'Description de l\'épopée (optionnel)'}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="status">{t('status')} *</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value: any) =>
-                setFormData({ ...formData, status: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="open">{t('epicStatus.open')}</SelectItem>
-                <SelectItem value="in_progress">
-                  {t('epicStatus.in_progress')}
-                </SelectItem>
-                <SelectItem value="done">{t('epicStatus.done')}</SelectItem>
-                <SelectItem value="archived">
-                  {t('epicStatus.archived')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('status')} *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('selectStatus')} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="open">{t('epicStatus.open')}</SelectItem>
+                      <SelectItem value="in_progress">
+                        {t('epicStatus.in_progress')}
+                      </SelectItem>
+                      <SelectItem value="done">{t('epicStatus.done')}</SelectItem>
+                      <SelectItem value="archived">
+                        {t('epicStatus.archived')}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? tCommon('saving')
-                : epic
-                  ? tCommon('update')
-                  : tCommon('create')}
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={form.formState.isSubmitting}
+              >
+                {tCommon('cancel')}
+              </Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting
+                  ? tCommon('saving')
+                  : epic
+                    ? tCommon('update')
+                    : tCommon('create')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
 }
-

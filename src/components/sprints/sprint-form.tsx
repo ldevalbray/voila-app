@@ -1,6 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import * as React from 'react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Sprint } from '@/lib/sprints'
 import { createSprint, updateSprint } from '@/lib/actions/sprints-actions'
 import {
@@ -13,7 +16,6 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -22,7 +24,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { useTranslations } from 'next-intl'
+import { showToast } from '@/lib/toast'
+import { sprintFormSchema, type SprintFormValues } from '@/lib/validations/sprint-form'
 
 interface SprintFormProps {
   projectId: string
@@ -41,59 +53,71 @@ export function SprintForm({
 }: SprintFormProps) {
   const t = useTranslations('projects')
   const tCommon = useTranslations('common')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  const [formData, setFormData] = useState({
-    name: sprint?.name || '',
-    goal: sprint?.goal || '',
-    status: sprint?.status || 'planned',
-    start_date: sprint?.start_date || '',
-    end_date: sprint?.end_date || '',
+  // Initialiser React Hook Form avec Zod
+  const form = useForm<SprintFormValues>({
+    resolver: zodResolver(sprintFormSchema),
+    defaultValues: {
+      name: sprint?.name || '',
+      goal: sprint?.goal || '',
+      status: sprint?.status || 'planned',
+      start_date: sprint?.start_date || '',
+      end_date: sprint?.end_date || '',
+    },
+    mode: 'onChange', // Validation en temps réel
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
+  // Réinitialiser le formulaire quand le sprint ou l'état open change
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: sprint?.name || '',
+        goal: sprint?.goal || '',
+        status: sprint?.status || 'planned',
+        start_date: sprint?.start_date || '',
+        end_date: sprint?.end_date || '',
+      })
+    }
+  }, [open, sprint, form])
 
+  const onSubmit = async (values: SprintFormValues) => {
     try {
       if (sprint) {
         // Mise à jour
         const result = await updateSprint({
           id: sprint.id,
-          name: formData.name,
-          goal: formData.goal || null,
-          status: formData.status,
-          start_date: formData.start_date || null,
-          end_date: formData.end_date || null,
+          name: values.name,
+          goal: values.goal || null,
+          status: values.status,
+          start_date: values.start_date || null,
+          end_date: values.end_date || null,
         })
         if (result.error) {
-          setError(result.error)
-          setIsSubmitting(false)
+          showToast.error(result.error)
           return
         }
+        showToast.success(t('sprintUpdated') || 'Sprint mis à jour')
       } else {
         // Création
         const result = await createSprint({
           project_id: projectId,
-          name: formData.name,
-          goal: formData.goal || null,
-          status: formData.status,
-          start_date: formData.start_date || null,
-          end_date: formData.end_date || null,
+          name: values.name,
+          goal: values.goal || null,
+          status: values.status,
+          start_date: values.start_date || null,
+          end_date: values.end_date || null,
         })
         if (result.error) {
-          setError(result.error)
-          setIsSubmitting(false)
+          showToast.error(result.error)
           return
         }
+        showToast.success(t('sprintCreated') || 'Sprint créé')
       }
 
       onSuccess()
     } catch (err) {
-      setError(tCommon('error'))
-      setIsSubmitting(false)
+      const errorMessage = err instanceof Error ? err.message : tCommon('error')
+      showToast.error(errorMessage)
     }
   }
 
@@ -111,116 +135,134 @@ export function SprintForm({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('name')} *</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder={t('sprintNamePlaceholder') || 'Nom du sprint'} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="goal"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('goal')}</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      value={field.value || ''}
+                      rows={3}
+                      placeholder={t('sprintGoalPlaceholder') || 'Objectif du sprint (optionnel)'}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('status')} *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('selectStatus')} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="planned">
+                        {t('sprintStatus.planned')}
+                      </SelectItem>
+                      <SelectItem value="active">
+                        {t('sprintStatus.active')}
+                      </SelectItem>
+                      <SelectItem value="completed">
+                        {t('sprintStatus.completed')}
+                      </SelectItem>
+                      <SelectItem value="cancelled">
+                        {t('sprintStatus.cancelled')}
+                      </SelectItem>
+                      <SelectItem value="archived">
+                        {t('sprintStatus.archived')}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="start_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('startDate')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="end_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('endDate')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="name">{t('name')} *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="goal">{t('goal')}</Label>
-            <Textarea
-              id="goal"
-              value={formData.goal}
-              onChange={(e) =>
-                setFormData({ ...formData, goal: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="status">{t('status')} *</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: any) =>
-                  setFormData({ ...formData, status: value })
-                }
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={form.formState.isSubmitting}
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="planned">
-                    {t('sprintStatus.planned')}
-                  </SelectItem>
-                  <SelectItem value="active">
-                    {t('sprintStatus.active')}
-                  </SelectItem>
-                  <SelectItem value="completed">
-                    {t('sprintStatus.completed')}
-                  </SelectItem>
-                  <SelectItem value="cancelled">
-                    {t('sprintStatus.cancelled')}
-                  </SelectItem>
-                  <SelectItem value="archived">
-                    {t('sprintStatus.archived')}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start_date">{t('startDate')}</Label>
-              <Input
-                id="start_date"
-                type="date"
-                value={formData.start_date}
-                onChange={(e) =>
-                  setFormData({ ...formData, start_date: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="end_date">{t('endDate')}</Label>
-              <Input
-                id="end_date"
-                type="date"
-                value={formData.end_date}
-                onChange={(e) =>
-                  setFormData({ ...formData, end_date: e.target.value })
-                }
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? tCommon('saving')
-                : sprint
-                  ? tCommon('update')
-                  : tCommon('create')}
-            </Button>
-          </DialogFooter>
-        </form>
+                {tCommon('cancel')}
+              </Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting
+                  ? tCommon('saving')
+                  : sprint
+                    ? tCommon('update')
+                    : tCommon('create')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
 }
-
