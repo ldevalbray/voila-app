@@ -16,7 +16,8 @@
     "create": "Create",
     "update": "Update",
     "saving": "Saving...",
-    "actions": "Actions"
+    "actions": "Actions",
+    "home": "Home"
   },
   "auth": {
     "login": {
@@ -125,6 +126,9 @@
     "project": "Project",
     "selectProjectDescription": "Select a project to create a task",
     "client": "Client",
+    "home": "Home",
+    "projects": "Projects",
+    "tasks": "Tasks",
     "status": "Status",
     "actions": "Actions",
     "view": "View",

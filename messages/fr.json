@@ -16,7 +16,8 @@
     "create": "Créer",
     "update": "Mettre à jour",
     "saving": "Enregistrement...",
-    "actions": "Actions"
+    "actions": "Actions",
+    "home": "Accueil"
   },
   "auth": {
     "login": {
@@ -125,6 +126,9 @@
     "project": "Projet",
     "selectProjectDescription": "Sélectionnez un projet pour créer une tâche",
     "client": "Client",
+    "home": "Accueil",
+    "projects": "Projets",
+    "tasks": "Tâches",
     "status": "Statut",
     "actions": "Actions",
     "view": "Voir",
