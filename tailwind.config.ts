@@ -111,7 +111,7 @@ const config: Config = {
   			'body': ['1rem', { lineHeight: '1.6', fontWeight: '400' }],
   			'body-sm': ['0.875rem', { lineHeight: '1.5', fontWeight: '400' }],
   			'caption': ['0.75rem', { lineHeight: '1.4', fontWeight: '400' }],
-  			'code': ['0.875rem', { lineHeight: '1.5', fontFamily: 'var(--font-commit-mono)' }],
+  			'code': ['0.875rem', { lineHeight: '1.5' }],
   		},
   		keyframes: {
   			'accordion-down': {

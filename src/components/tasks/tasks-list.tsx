@@ -614,7 +614,9 @@ export function TasksList({
                                 </Badge>
                               </div>
                             </div>
-                            <TaskTimeBadge taskId={task.id} className="hidden sm:flex" />
+                            <div className="hidden sm:flex">
+                              <TaskTimeBadge taskId={task.id} />
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">

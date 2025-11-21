@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
-import { Breadcrumbs } from '@/components/ui/breadcrumbs'
+import { Breadcrumbs, type BreadcrumbItem } from '@/components/ui/breadcrumbs'
 
 interface SearchConfig {
   placeholder?: string
@@ -15,11 +15,6 @@ interface SearchConfig {
   onClear?: () => void
   expanded?: boolean // Pour contrôler l'état depuis l'extérieur
   onExpandedChange?: (expanded: boolean) => void
-}
-
-interface BreadcrumbItem {
-  label: string
-  href?: string
 }
 
 interface PageToolbarProps {

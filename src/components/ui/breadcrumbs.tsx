@@ -2,9 +2,10 @@ import Link from 'next/link'
 import { ChevronRight, Home } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface BreadcrumbItem {
+export interface BreadcrumbItem {
   label: string
   href?: string
+  isCurrent?: boolean
 }
 
 interface BreadcrumbsProps {
@@ -25,13 +26,14 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
       <ol className="flex items-center space-x-2">
         {items.map((item, index) => {
           const isLast = index === items.length - 1
+          const isCurrent = item.isCurrent ?? isLast
 
           return (
             <li key={index} className="flex items-center space-x-2">
               {index === 0 && (
                 <Home className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               )}
-              {item.href && !isLast ? (
+              {item.href && !isCurrent ? (
                 <>
                   <Link
                     href={item.href}
@@ -45,13 +47,13 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                 <>
                   <span
                     className={cn(
-                      isLast ? 'text-foreground font-medium' : 'text-muted-foreground'
+                      isCurrent ? 'text-foreground font-medium' : 'text-muted-foreground'
                     )}
-                    aria-current={isLast ? 'page' : undefined}
+                    aria-current={isCurrent ? 'page' : undefined}
                   >
                     {item.label}
                   </span>
-                  {!isLast && (
+                  {!isCurrent && (
                     <ChevronRight className="h-4 w-4 text-muted-foreground/50" aria-hidden="true" />
                   )}
                 </>

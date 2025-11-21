@@ -7,7 +7,7 @@ import { SprintPicker } from '@/components/layout/sprint-picker'
 import { Task } from '@/lib/tasks'
 import { Epic } from '@/lib/epics'
 import { useRouter } from 'next/navigation'
-import { LoadingSpinner, SkeletonTable } from '@/components/ui/skeleton'
+import { SkeletonTable } from '@/components/ui/skeleton'
 import { showToast } from '@/lib/toast'
 
 interface TasksPageClientProps {

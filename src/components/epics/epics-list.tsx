@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { EpicForm } from './epic-form'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
